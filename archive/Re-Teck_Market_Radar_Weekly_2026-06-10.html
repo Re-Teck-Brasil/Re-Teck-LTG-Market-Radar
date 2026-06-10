@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Re-Teck Market Radar</title>
+<style>
+:root{
+  --navy:#0E2A42; --navy2:#081726; --green:#36E0A8; --greenT:#D8F5EA; --greenT2:#AEEBD3;
+  --amber:#FFC000; --grey:#6B7785; --light:#EEF3F7; --link:#1E7FA6; --angle:#1A7A5A; --ink:#222B33;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:#fff;}
+a{color:var(--link);text-decoration:none}
+a:hover{text-decoration:underline}
+.top{background:var(--navy2);color:#fff;padding:18px 16px 16px;border-bottom:4px solid var(--green)}
+.top .brand{color:var(--green);font-weight:700;letter-spacing:2px;font-size:13px}
+.top h1{margin:2px 0 4px;font-size:22px}
+.top .meta{color:#cfe9df;font-size:12px}
+.wrap{max-width:1000px;margin:0 auto;padding:14px 14px 60px}
+.summary{background:var(--light);border-left:4px solid var(--green);padding:10px 12px;border-radius:6px;font-size:14px;line-height:1.45;margin:14px 0}
+h2{font-size:16px;color:var(--navy);margin:18px 0 8px}
+.controls{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:6px}
+.controls .lbl{font-size:12px;color:var(--grey);width:100%;margin-top:4px}
+.chip{border:1px solid #cfd8e0;background:#fff;color:var(--navy);border-radius:999px;padding:5px 11px;font-size:12.5px;cursor:pointer;white-space:nowrap}
+.chip.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.chip.region.active{background:var(--green);color:var(--navy);border-color:var(--green);font-weight:700}
+.matrixwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:8px}
+table.matrix{border-collapse:separate;border-spacing:0;width:100%;min-width:520px;font-size:13px}
+table.matrix th,table.matrix td{padding:9px 8px;text-align:center}
+table.matrix thead th{background:var(--navy);color:#fff;font-size:12px;cursor:pointer;position:sticky;top:0}
+table.matrix thead th:first-child{text-align:left}
+table.matrix tbody th{background:var(--light);color:var(--navy);text-align:left;font-size:12.5px;cursor:pointer;position:sticky;left:0;min-width:150px}
+table.matrix td{cursor:pointer;font-weight:700;color:var(--navy);border:2px solid #fff;border-radius:6px}
+td.z{color:#b3bcc4;font-weight:400;cursor:default}
+td.lo{background:var(--greenT)} td.hi{background:var(--greenT2)}
+td.sel{outline:3px solid var(--amber);outline-offset:-3px}
+.legend{font-size:11px;color:var(--grey);margin:6px 2px 0}
+.feedhead{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.count{background:var(--green);color:var(--navy);font-weight:700;border-radius:999px;padding:2px 9px;font-size:12px}
+.clear{font-size:12px;color:var(--link);cursor:pointer;border:0;background:none}
+.sec{margin-top:16px}
+.secbar{background:var(--navy);color:#fff;font-weight:700;border-left:4px solid var(--green);padding:8px 12px;border-radius:6px 6px 0 0;font-size:14px}
+.band{background:var(--greenT);color:var(--navy);font-weight:700;padding:6px 12px;font-size:12.5px;border-left:3px solid var(--green);margin-top:8px}
+.card{border:1px solid #e6ecf1;border-top:0;padding:10px 12px}
+.card:nth-child(even){background:#f7fafc}
+.card .co{font-weight:700;color:var(--navy);font-size:13.5px}
+.card .hl{font-size:13px;margin:1px 0 2px}
+.card .loc{font-size:11px;color:var(--grey)}
+.kp{margin:6px 0 4px;padding-left:16px}
+.kp li{font-size:12.5px;line-height:1.45;margin:1px 0}
+.angle{font-style:italic;color:var(--angle);font-size:12.5px;border-left:2px solid var(--greenT2);padding-left:8px;margin-top:4px}
+.empty{color:var(--grey);font-style:italic;font-size:12.5px;padding:8px 12px;border:1px solid #e6ecf1;border-top:0}
+.foot{color:var(--grey);font-size:11px;margin-top:24px;text-align:center}
+@media (max-width:640px){ .top h1{font-size:19px} h2{font-size:15px} }
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="brand">RE-TECK</div>
+  <h1>Market Radar — Weekly</h1>
+  <div class="meta" id="meta"></div>
+</div>
+<div class="wrap">
+  <div class="summary" id="summary"></div>
+
+  <div class="controls" id="regionCtl"><span class="lbl">Your region — tap to see only your news:</span></div>
+  <div class="controls" id="sectorCtl"><span class="lbl">Sector:</span></div>
+
+  <h2>At a glance</h2>
+  <div class="matrixwrap"><table class="matrix" id="matrix"></table></div>
+  <div class="legend">Tap a number to open that sector &amp; region. Tap a row or column header to filter by sector or region. Greener = more activity. &ndash; = nothing found.</div>
+
+  <h2 class="feedhead"><span id="feedTitle">All news</span> <span class="count" id="count"></span> <button class="clear" id="clear" style="display:none">Clear filter</button></h2>
+  <div id="feed"></div>
+
+  <div class="foot">Re-Teck Market Radar · generated automatically · tap any headline to open the full story.</div>
+</div>
+<script>
+const DATA = {"report_date": "2026-06-10", "window": "Past 7 days (week of 2026-06-10)", "summary": "AI infrastructure leads: gigawatt buildouts (SK Telecom/Nvidia, 20GW XPU, Applied Digital's $5.2B lease) and >$1T capex point to fast GPU refresh cycles. Brazil active (Elea Rio AI City, Claro GPU-as-a-Service); carrier modernization signals network gear retirement.", "sectors": [{"name": "ITAD Data Centers", "regions": {"North America": [{"company": "Applied Digital", "headline": "Signs 210MW, $5.2B hyperscaler lease at Delta Forge 2", "key_points": ["210MW lease, ~$5.2B over 15 years", "Live Q1 2028; 5th AI campus", "Investment-grade hyperscaler tenant"], "reteck_angle": "Multi-refresh GPU/server fleet = recurring decommissioning and reuse volume.", "url": "https://www.datacenterdynamics.com/en/news/applied-digital-secures-customer-for-new-210mw-data-center-campus/", "location": "Southern US"}, {"company": "Broadcom / Apollo / Blackstone", "headline": "Launch 20GW XPU AI-compute platform", "key_points": ["20GW+ AI compute by 2028", "$35B first tranche (Anthropic/Fluidstack)"], "reteck_angle": "Huge custom-silicon turnover; large high-value accelerator decommissioning ahead.", "url": "https://www.datacenterdynamics.com/en/news/broadcom-apollo-and-blackstone-launch-20gw-xpu-platform/", "location": "United States"}, {"company": "Meta", "headline": "Signs 180MW Texas solar PPA", "key_points": ["180MW solar PPA in Texas", "Zelestra total now 1.4GW"], "reteck_angle": "Texas AI scaling drives multi-generation server decommissioning.", "url": "https://www.datacenterdynamics.com/en/news/meta-signs-180mw-solar-ppa-with-zelestra-in-freestone-county-texas/", "location": "Texas, USA"}, {"company": "Amazon (AWS)", "headline": "Multibillion-dollar Corning fiber deal", "key_points": ["Multibillion-$ fiber supply deal", "1,000 new jobs"], "reteck_angle": "Continuous AWS hardware turnover feeds recycling and secure destruction.", "url": "https://www.datacenterdynamics.com/en/news/amazon-strikes-multibillion-dollar-optical-fiber-deal-with-corning-touts-1000-new-jobs/", "location": "United States"}, {"company": "EG AI", "headline": "2.5MW immersion-cooled AI data center in DFW", "key_points": ["2.5MW immersion-cooled site, DFW", "New AI/GPU entrant"], "reteck_angle": "Dense GPUs on short cycles; niche white-glove end-of-life handling.", "url": "https://www.datacenterdynamics.com/en/news/25mw-immersion-cooled-data-center-coming-to-dfw-texas/", "location": "Dallas-Fort Worth, USA"}], "Latin America - Brazil": [{"company": "Elea Data Centers", "headline": "$550M investment in Rio AI City", "key_points": ["US$550M into Rio AI City", "1.5GW now, up to 3GW by 2032", "RJO1 already live"], "reteck_angle": "Long-term Brazil pipeline for GPU/server decommissioning and reuse.", "url": "https://teletime.com.br/08/06/2026/elea-data-centers-anuncia-aporte-de-us-550-milhoes-no-rio-ai-city/", "location": "Rio de Janeiro, Brazil"}, {"company": "Claro", "headline": "Launches GPU-as-a-Service in Brazil", "key_points": ["Launches GPU-as-a-Service", "Enters Brazil AI compute market"], "reteck_angle": "Dense, fast-refreshed GPU fleet = future reuse and recycling volume.", "url": "https://teletime.com.br/09/06/2026/claro-gpu-as-a-service-brasil/", "location": "Brazil"}, {"company": "Anatel", "headline": "Tells Senate data centers are critical infrastructure", "key_points": ["DCs called critical infrastructure", "REDATA incentives in debate"], "reteck_angle": "Policy tailwind grows the installed base needing disposition.", "url": "https://teletime.com.br/09/06/2026/data-center-anatel/", "location": "Brasilia, Brazil"}], "Latin America - Other": [], "EMEA": [{"company": "Ark / Nebius", "headline": "GBP807M Longcross campus for Nebius", "key_points": ["~GBP807M Surrey campus", "Nebius leases + new 36MW building"], "reteck_angle": "Dedicated GPU campus; prime UK decommissioning and resale stream.", "url": "https://www.datacenterdynamics.com/en/news/ark-dc-to-add-new-building-to-longcross-data-center-campus-outside-london-uk/", "location": "Surrey, UK"}, {"company": "Civo / Era4", "headline": "Launch UK sovereign AI cloud", "key_points": ["UK sovereign AI cloud", "New GPU capacity"], "reteck_angle": "Fast-refresh GPU clusters need in-region compliant ITAD.", "url": "https://www.datacenterdynamics.com/en/news/civo-and-era4-launch-sovereign-ai-cloud-offering-in-the-uk/", "location": "United Kingdom"}, {"company": "Trevian / GleSYS", "headline": "Data center on former Nokia site, Oulu", "key_points": ["DC on former Nokia site, Oulu", "Brownfield Nordic capacity"], "reteck_angle": "New base to refresh; brownfield implies legacy clearance.", "url": "https://www.datacenterdynamics.com/en/news/real-estate-firm-trevian-partners-with-glesys-for-a-data-center-in-oulu-finland/", "location": "Oulu, Finland"}], "APAC + Oceania": [{"company": "SK Telecom / Nvidia", "headline": "Gigawatt-scale AI cloud on Nvidia DSX", "key_points": ["GW-scale AI cloud on Nvidia DSX", "First AI factory 2027"], "reteck_angle": "Successive GPU generations anchor major APAC decommissioning stream.", "url": "https://www.datacenterdynamics.com/en/news/sk-telecom-plots-gigawatt-scale-ai-cloud-in-south-korea-with-nvidia/", "location": "South Korea"}, {"company": "Alibaba Cloud", "headline": "Opens Johor cloud region in Malaysia", "key_points": ["New Johor cloud region", "2 new DCs; 5 total in Malaysia"], "reteck_angle": "Hyperscale fleet growth expands future disposition base.", "url": "https://www.datacenterdynamics.com/en/news/alibaba-launches-cloud-region-in-johor-malaysia/", "location": "Johor, Malaysia"}, {"company": "Keppel", "headline": "60MW Seoul data center, live 2030", "key_points": ["60MW Seoul DC, live 2030", "First Korea entry"], "reteck_angle": "New colocation base = long-term tenant ITAD demand.", "url": "https://www.datacenterdynamics.com/en/news/keppel-to-enter-south-korean-data-center-market-plans-60mw-facility-in-seoul/", "location": "Seoul, South Korea"}, {"company": "STT GDC", "headline": "Acquires land parcel in Navi Mumbai", "key_points": ["3.5-acre Navi Mumbai land", "Expands India land bank"], "reteck_angle": "Signals next India capacity wave needing future disposition.", "url": "https://www.datacenterdynamics.com/en/news/singapores-stt-acquires-35-acre-land-parcel-in-navi-mumbai-india/", "location": "Navi Mumbai, India"}]}}, {"name": "ITAD OEM", "regions": {"North America": [{"company": "Super Micro", "headline": "$7B raise to fund $39B in AI server orders", "key_points": ["~$7B raise for $39B AI orders", "20+ customers"], "reteck_angle": "Massive server wave + legacy displacement = direct ITAD pipeline.", "url": "https://ir.supermicro.com/news/news-details/2026/Supermicro-Announces-Proposed-7-0-Billion-of-Equity-and-Equity-linked-Financing-Transactions-To-Fund-AI-Orders/default.aspx", "location": "San Jose, USA"}, {"company": "Apple", "headline": "WWDC 2026: AI Siri, iOS/macOS 27", "key_points": ["AI Siri, iOS/macOS 27", "macOS drops Intel Macs"], "reteck_angle": "Forced obsolescence feeds trade-in, take-back and parts harvesting.", "url": "https://www.cnbc.com/2026/06/08/apple-wwdc-2026-live-updates.html", "location": "Cupertino, USA"}], "Latin America - Brazil": [], "Latin America - Other": [], "EMEA": [], "APAC + Oceania": [{"company": "China Mobile / Telecom / Huawei", "headline": "~$295B nationwide AI data-center plan", "key_points": ["~$295B nationwide AI DC plan", "State telcos + Huawei supply"], "reteck_angle": "Vast deployment + legacy retirement = long-tail circular IT demand.", "url": "https://www.bloomberg.com/news/articles/2026-06-09/china-prepares-295-billion-plan-to-fund-nationwide-ai-buildout", "location": "China"}]}}, {"name": "ITAD Leasing Companies", "regions": {"North America": [], "Latin America - Brazil": [], "Latin America - Other": [], "EMEA": [{"company": "Grenke", "headline": "UK SMEs deferring IT refreshes ('Seven-Month Economy')", "key_points": ["UK SMEs deferring IT refreshes", "Leasing positioned for upgrades"], "reteck_angle": "Deferred fleets return off-lease for wiping, remarketing, recycling.", "url": "https://www.grenke.co.uk/grenke-insights/news/2026/rlol-press-release/", "location": "United Kingdom"}], "APAC + Oceania": []}}, {"name": "Telecom OEM", "regions": {"North America": [], "Latin America - Brazil": [], "Latin America - Other": [], "EMEA": [], "APAC + Oceania": []}}, {"name": "Telecom Carriers", "regions": {"North America": [{"company": "AT&T, T-Mobile, Verizon", "headline": "Join coalition against network vandalism", "key_points": ["Coalition vs network vandalism", "Copper/fiber theft focus"], "reteck_angle": "Equipment replacement yields retired gear and recoverable metals.", "url": "https://www.lightreading.com/regulatory-politics/at-t-t-mobile-and-verizon-join-cable-s-strike-force", "location": "United States"}, {"company": "T-Mobile / Ericsson", "headline": "AI-native scheduler on live 5G Advanced", "key_points": ["AI scheduler on live 5G", "+10% efficiency, +15% speed"], "reteck_angle": "RAN modernization retires/reconfigures radios into ITAD stream.", "url": "https://www.phonearena.com/news/t-mobile-ericsson-ai-native-scheduler-with-link-adaptation-5g_id180334", "location": "United States"}], "Latin America - Brazil": [], "Latin America - Other": [{"company": "Claro (America Movil)", "headline": "Expands 5G in Ecuador to 17 cities", "key_points": ["5G now in 17 cities", "3 new cities added"], "reteck_angle": "5G buildout swaps legacy gear and lifts device trade-in volume.", "url": "https://www.larepublica.ec/blog/2026/06/02/la-red-5g-de-claro-sigue-creciendo-ya-son-17-ciudades-desde-hoy-manta-loja-y-santo-domingo/", "location": "Ecuador"}], "EMEA": [{"company": "Telefonica Germany / OQ", "headline": "Direct-to-device satellite fill-in trial", "key_points": ["Direct-to-device satellite trial", "Own spectrum, rural fill-in"], "reteck_angle": "Hybrid networks rationalize rural sites; base-station gear retires.", "url": "https://www.lightreading.com/satellite/eurobites-telef-nica-germany-tests-sovereign-satellite-fill-in", "location": "Germany"}, {"company": "O2 / Proximus / Telefonica Tech", "headline": "Push enterprise private 5G", "key_points": ["Hybrid private 5G push", "2,003 private nets; costs -30-40%"], "reteck_angle": "New device/edge fleets become future ITAD and refurbishment.", "url": "https://www.lightreading.com/private-networks/telcos-redefining-their-role-in-private-5g-future", "location": "Europe"}], "APAC + Oceania": [{"company": "Singtel / Optus", "headline": "Open to minority stake sale in Optus", "key_points": ["Open to minority stake in Optus", "AU$400m exceptional loss"], "reteck_angle": "Restructuring surfaces retired network/IT and retail device inventory.", "url": "https://www.datacenterdynamics.com/en/news/singtel-considers-minority-stake-sale-in-optus/", "location": "Australia / Singapore"}]}}]};
+const SECTORS = ["ITAD Data Centers","ITAD OEM","ITAD Leasing Companies","Telecom OEM","Telecom Carriers"];
+const REGIONS = [
+  ["North America","North America","N. America"],
+  ["Latin America - Brazil","Brazil","Brazil"],
+  ["Latin America - Other","Latin America (rest)","LatAm rest"],
+  ["EMEA","EMEA","EMEA"],
+  ["APAC + Oceania","APAC + Oceania","APAC+Oce."]
+];
+let state = {sector:null, region:null};
+
+function regionsOf(name){ const s=(DATA.sectors||[]).find(x=>x.name===name); return (s&&s.regions)||{}; }
+function items(name,key){ return (regionsOf(name)[key])||[]; }
+
+function el(tag,cls,txt){ const e=document.createElement(tag); if(cls)e.className=cls; if(txt!=null)e.textContent=txt; return e; }
+
+function setFilter(sector,region){ state.sector=sector; state.region=region; if(region) localStorage.setItem('reteck_region',region); render(); window.scrollTo({top:document.getElementById('matrix').offsetTop-10,behavior:'smooth'}); }
+
+function buildControls(){
+  const rc=document.getElementById('regionCtl');
+  const all=el('button','chip region'+(state.region===null?' active':''),'All regions'); all.onclick=()=>{state.region=null;localStorage.removeItem('reteck_region');render();}; rc.appendChild(all);
+  REGIONS.forEach(r=>{ const b=el('button','chip region'+(state.region===r[0]?' active':''),r[1]); b.onclick=()=>{state.region=r[0];localStorage.setItem('reteck_region',r[0]);render();}; rc.appendChild(b); });
+  const sc=document.getElementById('sectorCtl');
+  const sall=el('button','chip'+(state.sector===null?' active':''),'All sectors'); sall.onclick=()=>{state.sector=null;render();}; sc.appendChild(sall);
+  SECTORS.forEach(s=>{ const b=el('button','chip'+(state.sector===s?' active':''),s); b.onclick=()=>{state.sector=s;render();}; sc.appendChild(b); });
+}
+
+function buildMatrix(){
+  const t=document.getElementById('matrix'); t.innerHTML='';
+  const thead=el('thead'); const hr=el('tr');
+  const corner=el('th',null,'Sector / Region'); hr.appendChild(corner);
+  REGIONS.forEach(r=>{ const th=el('th',null,r[2]); th.onclick=()=>setFilter(null,r[0]); hr.appendChild(th); });
+  thead.appendChild(hr); t.appendChild(thead);
+  const tb=el('tbody');
+  SECTORS.forEach(s=>{
+    const tr=el('tr'); const th=el('th',null,s); th.onclick=()=>setFilter(s,null); tr.appendChild(th);
+    REGIONS.forEach(r=>{
+      const n=items(s,r[0]).length; const td=el('td',null, n? String(n):'–');
+      if(n>=3)td.classList.add('hi'); else if(n>=1)td.classList.add('lo'); else td.classList.add('z');
+      if(state.sector===s && state.region===r[0]) td.classList.add('sel');
+      if(n) td.onclick=()=>setFilter(s,r[0]);
+      tr.appendChild(td);
+    });
+    tb.appendChild(tr);
+  });
+  t.appendChild(tb);
+}
+
+function card(it){
+  const c=el('div','card');
+  if(it.company) c.appendChild(el('div','co',it.company));
+  const hl=el('div','hl');
+  if(it.url){ const a=el('a',null,it.headline||''); a.href=it.url; a.target='_blank'; a.rel='noopener'; hl.appendChild(a); }
+  else hl.textContent=it.headline||'';
+  c.appendChild(hl);
+  if(it.location) c.appendChild(el('div','loc',it.location));
+  const kps=(it.key_points||[]).slice(0,3);
+  if(kps.length){ const ul=el('ul','kp'); kps.forEach(k=>ul.appendChild(el('li',null,k))); c.appendChild(ul); }
+  else if(it.summary) c.appendChild(el('div','hl',it.summary));
+  if(it.reteck_angle){ const a=el('div','angle','Re-Teck angle: '+it.reteck_angle); c.appendChild(a); }
+  return c;
+}
+
+function render(){
+  buildMatrix();
+  document.getElementById('sectorCtl').innerHTML='<span class="lbl">Sector:</span>';
+  document.getElementById('regionCtl').innerHTML='<span class="lbl">Your region — tap to see only your news:</span>';
+  buildControls();
+  const feed=document.getElementById('feed'); feed.innerHTML='';
+  const secs = state.sector? [state.sector]:SECTORS;
+  const regs = state.region? REGIONS.filter(r=>r[0]===state.region):REGIONS;
+  let total=0;
+  secs.forEach(s=>{
+    let secCount=0; const block=el('div','sec'); block.appendChild(el('div','secbar',s));
+    let any=false;
+    regs.forEach(r=>{
+      const its=items(s,r[0]);
+      if(state.region && its.length===0 && !state.sector) return; // when region-only, skip empty sectors silently handled below
+      block.appendChild(el('div','band',r[1]));
+      if(its.length===0){ block.appendChild(el('div','empty','No relevant news in this window.')); }
+      else { its.forEach(it=>{ block.appendChild(card(it)); secCount++; total++; }); }
+      any=true;
+    });
+    if(any) feed.appendChild(block);
+  });
+  document.getElementById('count').textContent = total+(total===1?' item':' items');
+  let title='All news';
+  if(state.sector && state.region){ const rl=REGIONS.find(r=>r[0]===state.region)[1]; title=state.sector+' · '+rl; }
+  else if(state.sector){ title=state.sector; }
+  else if(state.region){ title=REGIONS.find(r=>r[0]===state.region)[1]; }
+  document.getElementById('feedTitle').textContent=title;
+  document.getElementById('clear').style.display=(state.sector||state.region)?'inline':'none';
+}
+
+document.getElementById('clear').onclick=()=>{ state={sector:null,region:null}; render(); };
+document.getElementById('meta').textContent='Week of '+(DATA.report_date||'')+'  ·  Window: '+(DATA.window||'Past 7 days');
+document.getElementById('summary').textContent=DATA.summary||'';
+const saved=localStorage.getItem('reteck_region'); if(saved && REGIONS.some(r=>r[0]===saved)) state.region=saved;
+render();
+</script>
+</body>
+</html>
