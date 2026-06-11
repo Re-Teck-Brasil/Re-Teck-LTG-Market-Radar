@@ -100,10 +100,20 @@ function tr(key){return (STRINGS[currentLang]||STRINGS.en)[key]||STRINGS.en[key]
 function t18n(){document.querySelectorAll("[data-i18n]").forEach(e=>{e.textContent=tr(e.getAttribute("data-i18n"));});}
 function changeLang(lang){currentLang=lang;localStorage.setItem("reteck_lang",lang);document.getElementById("langSwitch").value=lang;t18n();}
 function showTab(n){
-  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+  // Remove active from all sections and buttons
+  document.querySelectorAll(".wrap > .section").forEach(s=>s.classList.remove("active"));
   document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
-  document.getElementById(n).classList.add("active");
-  event.target.classList.add("active");
+  
+  // Add active to the selected section
+  const target = document.getElementById(n);
+  if(target) target.classList.add("active");
+  
+  // Highlight the button that was clicked
+  const btn = Array.from(document.querySelectorAll(".tab-btn")).find(b => 
+    (b.getAttribute("data-tab") === n) || (b.textContent.includes(n))
+  );
+  if(btn) btn.classList.add("active");
+  
   renderTab(n);
 }
 function showSub(n){
