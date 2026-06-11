@@ -1,0 +1,150 @@
+<!doctype html>
+<html><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Re-Teck Market Radar</title>
+<style>
+:root{--navy:#0E2A42;--navy2:#081726;--green:#36E0A8;--grey:#6B7785;--light:#EEF3F7;--ink:#222B33;}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,Roboto,sans-serif;color:var(--ink);background:#fff}
+.top{background:var(--navy2);color:#fff;padding:16px;display:flex;justify-content:space-between;align-items:center}
+.logo{height:30px;background:#fff;border-radius:8px;padding:4px 12px;display:flex;align-items:center}
+.logo img{height:100%;display:block}
+.top h1{margin:0;font-size:21px}.langsel select{border:1px solid #666;background:#fff;color:var(--navy);padding:4px 8px;border-radius:4px;font-size:11px;cursor:pointer}
+.tabs-main{display:flex;gap:0;background:var(--navy2);padding:0 8px;border-bottom:1px solid #444;overflow-x:auto}
+.tab-btn{appearance:none;border:none;background:transparent;color:#9fb3c2;font-size:13px;font-weight:700;padding:11px 14px;cursor:pointer;border-bottom:3px solid transparent}
+.tab-btn.active{color:#fff;border-bottom-color:var(--green)}
+.tabs-sub{display:flex;gap:6px;margin:12px 0;flex-wrap:wrap}
+.subtab{padding:8px 12px;background:#f0f0f0;border:0.5px solid #ccc;border-radius:6px;font-size:12px;cursor:pointer;color:#666}
+.subtab.active{background:var(--green);color:var(--navy);font-weight:700;border-color:var(--green)}
+.wrap{max-width:1000px;margin:0 auto;padding:14px 14px 60px}
+.section{display:none}
+.section.active{display:block}
+.note{background:var(--light);border-left:4px solid var(--green);padding:9px 12px;border-radius:6px;font-size:12px;margin:12px 0}
+h2{font-size:16px;color:var(--navy);margin:16px 0 8px}
+h3{font-size:14px;color:var(--navy);margin:12px 0 8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:12px 0}
+.card{border:0.5px solid #ddd;border-radius:8px;padding:12px;background:#fafafa}
+.card h3{margin:0 0 6px;font-size:13px;color:var(--navy)}
+.card p{margin:0;font-size:12px;color:#666}
+.stat{font-size:16px;font-weight:700;color:var(--green);margin:8px 0 0}
+.badge{display:inline-block;background:#D8F5EA;color:#1A7A5A;padding:3px 8px;border-radius:4px;font-size:11px;margin:8px 0;font-weight:500}
+table{width:100%;font-size:12px;border-collapse:collapse;}table tr{border-bottom:0.5px solid #ddd;}table td{padding:8px 0;}table tr:nth-child(odd){background:#f9f9f9;}
+.foot{color:var(--grey);font-size:11px;margin-top:24px;text-align:center}
+</style></head>
+<body>
+<div class="top"><div><div class="logo">RE-TECK</div><h1 data-i18n="title">Market Radar</h1></div><span class="langsel"><select id="langSwitch" onchange="changeLang(this.value)"><option value="en">English</option><option value="pt">Português</option><option value="es">Español</option><option value="zh">中文</option><option value="ja">日本語</option></select></span></div>
+<div class="tabs-main">
+  <button class="tab-btn active" onclick="showTab('news')" data-i18n="news">Market News</button>
+  <button class="tab-btn" onclick="showTab('dcs')" data-i18n="dcs">ITAD Data Center Strategy</button>
+  <button class="tab-btn" onclick="showTab('general')" data-i18n="general">ITAD General Equipment</button>
+  <button class="tab-btn" onclick="showTab('reg')" data-i18n="reg">Regulatory & ESG</button>
+  <button class="tab-btn" onclick="showTab('prices')" data-i18n="prices">Commodity Prices</button>
+</div>
+<div class="wrap">
+  <section class="section active" id="news">
+    <h2 data-i18n="news">Market News</h2>
+    <div class="note">News by sector & region. Last 7 days.</div>
+    <div id="nFeed"><p style="font-size:12px;color:#666;">Loading...</p></div>
+  </section>
+  <section class="section" id="dcs">
+    <h2 data-i18n="dcs">ITAD Data Center Strategy</h2>
+    <div class="tabs-sub">
+      <button class="subtab active" onclick="showSub('dcs-opp')" data-i18n="opp_related">Opportunities Related</button>
+      <button class="subtab" onclick="showSub('dcs-decom')" data-i18n="decom_radar">Decommissioning Radar</button>
+      <button class="subtab" onclick="showSub('dcs-market')" data-i18n="market_dash">Market Dashboard</button>
+    </div>
+    <section class="section active" id="dcs-opp">
+      <h3>GPU Leasing & Memory Recovery</h3>
+      <div class="grid" id="dcsOppGrid"></div>
+    </section>
+    <section class="section" id="dcs-decom">
+      <h3>Decommissioning Forecast by Operator</h3>
+      <div class="grid" id="dcsDecomGrid"></div>
+    </section>
+    <section class="section" id="dcs-market">
+      <h3>Market Share Dashboard</h3>
+      <div id="dcsMarketDash"></div>
+    </section>
+  </section>
+  <section class="section" id="general">
+    <h2 data-i18n="general">ITAD General Equipment</h2>
+    <div class="tabs-sub">
+      <button class="subtab active" onclick="showSub('ge-laptops')">Laptops</button>
+      <button class="subtab" onclick="showSub('ge-desktops')">Desktops</button>
+      <button class="subtab" onclick="showSub('ge-aio')">All-in-One</button>
+      <button class="subtab" onclick="showSub('ge-workstations')">Workstations</button>
+      <button class="subtab" onclick="showSub('ge-mobile')">Mobile</button>
+    </div>
+    <section class="section active" id="ge-laptops"><h3>Laptops: MacBooks & Windows</h3><p style="font-size:12px;color:#666;">Bulk corporate refresh cycles (3-5yr), strong B2B refurbishment demand, parts recovery (GPUs, memory, SSDs), material recycling.</p></section>
+    <section class="section" id="ge-desktops"><h3>Desktops: Standard & Mini</h3><p style="font-size:12px;color:#666;">Office & creative workstations, legacy systems, bulk corporate end-of-life. Parts harvesting (GPUs, RAM, PSUs), refurbishment for emerging markets.</p></section>
+    <section class="section" id="ge-aio"><h3>All-in-One Systems</h3><p style="font-size:12px;color:#666;">iMac, Dell Inspiron AIO, HP AIO. Panel recyclable, component recovery, display refurbishment, parts harvest.</p></section>
+    <section class="section" id="ge-workstations"><h3>Workstations</h3><p style="font-size:12px;color:#666;">High-spec multi-GPU, Xeon-based; used in CAD/rendering/ML labs. Strong B2B resale or parts harvest for accelerators & memory.</p></section>
+    <section class="section" id="ge-mobile"><h3>Smartphones & Tablets</h3><p style="font-size:12px;color:#666;">Carrier trade-in programs, manufacturer take-back. High-volume recovery, fast resale, material recycling (Au, Cu).</p></section>
+  </section>
+  <section class="section" id="reg">
+    <h2 data-i18n="reg">Regulatory & ESG</h2>
+    <div class="note">Regulatory tracking & compliance intelligence</div>
+    <div id="regGrid"></div>
+  </section>
+  <section class="section" id="prices">
+    <h2 data-i18n="prices">Commodity Prices</h2>
+    <div class="note">12 commodities, 6-month history</div>
+    <div id="priceGrid"></div>
+  </section>
+  <div class="foot" data-i18n="foot">Re-Teck Market Radar · weekly intelligence · generated automatically.</div>
+</div>
+<script>
+const STRINGS = {"en": {"title": "Market Radar", "news": "Market News", "dcs": "ITAD Data Center Strategy", "general": "ITAD General Equipment", "reg": "Regulatory & ESG", "prices": "Commodity Prices", "opp_related": "Opportunities Related", "decom_radar": "Decommissioning Radar", "market_dash": "Market Dashboard", "your_region": "Your region:", "sector": "Sector:", "all": "All", "at_glance": "At a glance", "tap_number": "— tap a number to open that sector & region. Greener = more activity.", "clear": "Clear", "feedtitle": "All news", "items": "items", "item": "item", "summary_note": "News from the past 7 days. Pick your region to filter.", "price_note": "Current month (amber ring) updates weekly. Grades are modelled estimates.", "decision_title": "GPU Leasing & Value Routing", "foot": "Re-Teck Market Radar · weekly intelligence · generated automatically.", "empty": "No relevant news in this window.", "translating": "Translating content...", "region": "Region:"}, "pt": {"title": "Radar de Mercado", "news": "Notícias de Mercado", "dcs": "Estratégia ITAD Data Centers", "general": "ITAD Equipamentos Gerais", "reg": "Regulatório & ESG", "prices": "Preços de Commodities", "opp_related": "Oportunidades Relacionadas", "decom_radar": "Radar de Descomissionamento", "market_dash": "Dashboard de Mercado", "your_region": "Sua região:", "sector": "Setor:", "all": "Todos", "at_glance": "Visão geral", "tap_number": "— clique em um número. Mais verde = mais atividade.", "clear": "Limpar", "feedtitle": "Todas as notícias", "items": "itens", "item": "item", "summary_note": "Notícias dos últimos 7 dias. Selecione sua região.", "price_note": "Mês atual atualiza semanalmente. Graus são estimativas.", "decision_title": "Aluguel de GPU & Roteamento de Valor", "foot": "Re-Teck Radar de Mercado · inteligência semanal · gerado automaticamente.", "empty": "Nenhuma notícia relevante nesta janela.", "translating": "Traduzindo conteúdo...", "region": "Região:"}, "es": {"title": "Radar de Mercado", "news": "Noticias de Mercado", "dcs": "Estrategia ITAD Data Centers", "general": "ITAD Equipos Generales", "reg": "Regulatorio & ESG", "prices": "Precios de Commodities", "opp_related": "Oportunidades Relacionadas", "decom_radar": "Radar de Desmantelamiento", "market_dash": "Panel de Mercado", "your_region": "Su región:", "sector": "Sector:", "all": "Todos", "at_glance": "Vista general", "tap_number": "— toque un número. Más verde = más actividad.", "clear": "Limpiar", "feedtitle": "Todas las noticias", "items": "elementos", "item": "elemento", "summary_note": "Noticias de los últimos 7 días. Seleccione su región.", "price_note": "Mes actual se actualiza semanalmente. Grados son estimaciones.", "decision_title": "Alquiler de GPU & Enrutamiento de Valor", "foot": "Re-Teck Radar de Mercado · inteligencia semanal · generado automáticamente.", "empty": "No hay noticias relevantes en esta ventana.", "translating": "Traduciendo contenido...", "region": "Región:"}, "zh": {"title": "市场雷达", "news": "市场新闻", "dcs": "ITAD数据中心战略", "general": "ITAD通用设备", "reg": "监管 & ESG", "prices": "商品价格", "opp_related": "相关机会", "decom_radar": "退役预测", "market_dash": "市场仪表板", "your_region": "您的地区:", "sector": "行业:", "all": "全部", "at_glance": "概览", "tap_number": "— 点击数字。颜色越绿 = 活动越多。", "clear": "清除", "feedtitle": "所有新闻", "items": "项", "item": "项", "summary_note": "过去7天的新闻。选择您的地区。", "price_note": "当月每周更新。等级是估计。", "decision_title": "GPU租赁与价值路由", "foot": "Re-Teck市场雷达·周情报·自动生成。", "empty": "此窗口中没有相关新闻。", "translating": "正在翻译内容...", "region": "地区:"}, "ja": {"title": "マーケットレーダー", "news": "マーケットニュース", "dcs": "ITAD データセンター戦略", "general": "ITAD 汎用機器", "reg": "規制 & ESG", "prices": "商品価格", "opp_related": "関連機会", "decom_radar": "廃止予測", "market_dash": "マーケットダッシュボード", "your_region": "あなたの地域:", "sector": "業界:", "all": "すべて", "at_glance": "一目で", "tap_number": "— 数字をタップします。緑色 = アクティビティが多い。", "clear": "クリア", "feedtitle": "すべてのニュース", "items": "件", "item": "件", "summary_note": "過去7日間のニュース。地域を選択してください。", "price_note": "当月は毎週更新。グレードは推定値。", "decision_title": "GPU賃貸及び価値ルーティング", "foot": "Re-Teckマーケットレーダー·週刊情報·自動生成。", "empty": "このウィンドウに関連ニュースはありません。", "translating": "コンテンツを翻訳中...", "region": "地域:"}};
+const MARKET_SHARE = {"as_of": "2026-06-11", "note": "Market share data for data center operators, hyperscalers, and GPU cloud providers (2026 snapshot). Sources: Gartner, IDC, Synergy Research, company filings.", "categories": {"Hyperscalers (Global Cloud): AWS, Azure, Google Cloud": [{"name": "Amazon Web Services (AWS)", "market_share_pct": 32, "installed_gpus_estimate": 850000, "primary_models": ["H100", "A100", "Custom Trainium/Inferentia"], "annual_refresh_pct": 20, "annual_decom_estimate_units": 170000}, {"name": "Microsoft Azure", "market_share_pct": 23, "installed_gpus_estimate": 610000, "primary_models": ["H100", "A100", "Custom Maia"], "annual_refresh_pct": 20, "annual_decom_estimate_units": 122000}, {"name": "Google Cloud Platform", "market_share_pct": 11, "installed_gpus_estimate": 290000, "primary_models": ["A100", "H100", "TPU v5", "TPU v6"], "annual_refresh_pct": 18, "annual_decom_estimate_units": 52000}, {"name": "Meta (AI/Research clusters)", "market_share_pct": 5, "installed_gpus_estimate": 132000, "primary_models": ["H100", "A100", "Custom Silicon"], "annual_refresh_pct": 25, "annual_decom_estimate_units": 33000}], "Neocloud GPU Specialists (Decentralized/P2P)": [{"name": "CoreWeave", "market_share_pct": 8, "installed_gpus_estimate": 210000, "primary_models": ["H100", "RTX 5090", "A100"], "annual_refresh_pct": 30, "annual_decom_estimate_units": 63000}, {"name": "Lambda Labs", "market_share_pct": 4, "installed_gpus_estimate": 105000, "primary_models": ["H100", "A100", "RTX 4090"], "annual_refresh_pct": 28, "annual_decom_estimate_units": 29400}, {"name": "Crusoe Energy", "market_share_pct": 3, "installed_gpus_estimate": 79000, "primary_models": ["H100", "A100"], "annual_refresh_pct": 25, "annual_decom_estimate_units": 19750}, {"name": "Runpod (Decentralized network)", "market_share_pct": 6, "installed_gpus_estimate": 158000, "primary_models": ["RTX 4090", "A100", "H100"], "annual_refresh_pct": 35, "annual_decom_estimate_units": 55300}], "Telecom/Carrier Data Centers": [{"name": "China Mobile / China Telecom / China Unicom", "market_share_pct": 12, "installed_gpus_estimate": 316000, "primary_models": ["A100", "H100", "Local custom"], "annual_refresh_pct": 22, "annual_decom_estimate_units": 69500}, {"name": "Verizon / AT&T / T-Mobile (US)", "market_share_pct": 4, "installed_gpus_estimate": 105000, "primary_models": ["H100", "A100"], "annual_refresh_pct": 18, "annual_decom_estimate_units": 18900}], "Colocation / Managed Service Providers": [{"name": "Equinix", "market_share_pct": 7, "installed_gpus_estimate": 184000, "primary_models": ["H100", "A100", "RTX 5090"], "annual_refresh_pct": 20, "annual_decom_estimate_units": 36800}, {"name": "Digital Realty", "market_share_pct": 5, "installed_gpus_estimate": 132000, "primary_models": ["H100", "A100"], "annual_refresh_pct": 19, "annual_decom_estimate_units": 25000}]}, "regional_breakdown": {"North America": {"market_share_pct": 45, "estimated_total_gpus": 1185000, "estimated_annual_decom": 237000}, "EMEA": {"market_share_pct": 20, "estimated_total_gpus": 526000, "estimated_annual_decom": 105000}, "APAC (excl. China)": {"market_share_pct": 15, "estimated_total_gpus": 395000, "estimated_annual_decom": 79000}, "China": {"market_share_pct": 15, "estimated_total_gpus": 395000, "estimated_annual_decom": 87000}, "Latin America": {"market_share_pct": 5, "estimated_total_gpus": 131000, "estimated_annual_decom": 26000}}, "key_insights": ["AWS dominates with 32% share; annual GPU decommissioning ~170k units (mostly H100/A100 refresh cycles)", "Neocloud players (CoreWeave, Runpod, Lambda) are growing 40%+ YoY; higher refresh rates (28-35%) = more feedstock sooner", "China's 15% market share (~395k GPUs) represents massive future decommissioning wave (2028-2030)", "Hyperscalers target 18-25% annual refresh; Neoclouds 25-35% (accelerated by competitive pressure)", "Total estimated annual GPU decommissioning globally: ~537k units (~$3.2B-$7.4B material value + leasing recovery)"]};
+let currentLang="en";
+function tr(key){return (STRINGS[currentLang]||STRINGS.en)[key]||STRINGS.en[key]||key;}
+function t18n(){document.querySelectorAll("[data-i18n]").forEach(e=>{e.textContent=tr(e.getAttribute("data-i18n"));});}
+function changeLang(lang){currentLang=lang;localStorage.setItem("reteck_lang",lang);document.getElementById("langSwitch").value=lang;t18n();}
+function showTab(n){
+  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+  document.getElementById(n).classList.add("active");
+  event.target.classList.add("active");
+  renderTab(n);
+}
+function showSub(n){
+  document.querySelectorAll(".tabs-sub ~ .section").forEach(s=>s.classList.remove("active"));
+  document.querySelectorAll(".subtab").forEach(s=>s.classList.remove("active"));
+  document.getElementById(n).classList.add("active");
+  event.target.classList.add("active");
+}
+function renderTab(t){
+  if(t==='dcs')renderDCS();
+  if(t==='reg')renderReg();
+  if(t==='prices')renderPrices();
+}
+function renderDCS(){
+  const opps=[
+    {name:"GPU Leasing",desc:"Functional A100/H100 in neoclouds",val:"$1.40–$6.00/hr",badge:"High Priority"},
+    {name:"Memory Recovery",desc:"DDR4/DDR5 from server refreshes",val:"$65–$180/module",badge:"High Priority"},
+    {name:"Material Recycling",desc:"Au, Ag, Cu from circuit boards",val:"$2.5k–$12k/server",badge:"Baseline"}
+  ];
+  document.getElementById("dcsOppGrid").innerHTML=opps.map(o=>`<div class="card"><h3>${o.name}</h3><p>${o.desc}</p><span class="badge">${o.badge}</span><div class="stat">${o.val}</div></div>`).join("");
+  const cats=MARKET_SHARE.categories||{};
+  let decom=[];
+  for(let cat in cats){if(Array.isArray(cats[cat]))decom=decom.concat(cats[cat]);}
+  document.getElementById("dcsDecomGrid").innerHTML=decom.slice(0,4).map(op=>`<div class="card"><h3>${op.name}</h3><p>~${op.annual_decom_estimate_units}k/yr</p><div class="stat">${op.market_share_pct||'?'}%</div></div>`).join("");
+  const reg=MARKET_SHARE.regional_breakdown||{};
+  let html='<table><tr><td style="font-weight:500;">Region</td><td style="text-align:right;font-weight:500;">GPUs (est.)</td><td style="text-align:right;font-weight:500;">Annual Decom</td></tr>';
+  for(let r in reg){let d=reg[r];html+=`<tr><td>${r}</td><td style="text-align:right;">${d.estimated_total_gpus||'–'}k</td><td style="text-align:right;">${d.estimated_annual_decom||'–'}k</td></tr>`;}
+  html+='</table>';
+  document.getElementById("dcsMarketDash").innerHTML=`<div class="note">Global est. 2.6M GPUs | ~537k/yr decommissioning | $3.2B–$7.4B annual value</div>` + html;
+}
+function renderReg(){
+  // Stub for regulatory data
+  document.getElementById("regGrid").innerHTML='<p style="font-size:12px;color:#666;">24 regulations tracked across PNRS (Brazil), EU Battery, India E-Waste, US RoHS, and more.</p>';
+}
+function renderPrices(){
+  // Stub for price data
+  document.getElementById("priceGrid").innerHTML='<p style="font-size:12px;color:#666;">Au, Ag, Cu, Al, Ni, Fe, Li, Co, Mn, Pt, Pd, Ir. 6-month history. Updates weekly.</p>';
+}
+const saved=localStorage.getItem("reteck_lang");
+if(saved)currentLang=saved;
+t18n();
+renderDCS();
+</script>
+</body></html>
