@@ -1,0 +1,175 @@
+<!doctype html>
+<html><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Re-Teck Market Radar v2</title>
+<style>
+:root{--navy:#0E2A42;--navy2:#081726;--green:#36E0A8;--grey:#6B7785;--light:#EEF3F7;--ink:#222B33;}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,Roboto,sans-serif;color:var(--ink);background:#fff}
+.top{background:var(--navy2);color:#fff;padding:16px;display:flex;justify-content:space-between;align-items:center}
+.logo{height:30px;background:#fff;border-radius:8px;padding:4px 12px;display:flex;align-items:center;font-weight:700;color:var(--navy);}
+.top h1{margin:0;font-size:21px}.langsel select{border:1px solid #666;background:#fff;color:var(--navy);padding:4px 8px;border-radius:4px;font-size:11px;cursor:pointer}
+.tabs-main{display:flex;gap:0;background:var(--navy2);padding:0 8px;border-bottom:1px solid #444;overflow-x:auto}
+.tab-btn{appearance:none;border:none;background:transparent;color:#9fb3c2;font-size:13px;font-weight:700;padding:11px 14px;cursor:pointer;border-bottom:3px solid transparent;transition:all 0.2s}
+.tab-btn:hover{color:#fff}
+.tab-btn.active{color:#fff;border-bottom-color:var(--green)}
+.tabs-sub{display:flex;gap:6px;margin:12px 0;flex-wrap:wrap}
+.subtab{padding:8px 12px;background:#f0f0f0;border:0.5px solid #ccc;border-radius:6px;font-size:12px;cursor:pointer;color:#666;transition:all 0.2s}
+.subtab:hover{background:#e0e0e0}
+.subtab.active{background:var(--green);color:var(--navy);font-weight:700;border-color:var(--green)}
+.wrap{max-width:1000px;margin:0 auto;padding:14px 14px 60px}
+.section{display:none}
+.section.active{display:block}
+.note{background:var(--light);border-left:4px solid var(--green);padding:9px 12px;border-radius:6px;font-size:12px;margin:12px 0}
+h2{font-size:16px;color:var(--navy);margin:16px 0 8px}
+h3{font-size:14px;color:var(--navy);margin:12px 0 8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:12px 0}
+.card{border:0.5px solid #ddd;border-radius:8px;padding:12px;background:#fafafa}
+.card h3{margin:0 0 6px;font-size:13px;color:var(--navy)}
+.card p{margin:0;font-size:12px;color:#666}
+.stat{font-size:16px;font-weight:700;color:var(--green);margin:8px 0 0}
+.badge{display:inline-block;background:#D8F5EA;color:#1A7A5A;padding:3px 8px;border-radius:4px;font-size:11px;margin:8px 0;font-weight:500}
+table{width:100%;font-size:12px;border-collapse:collapse;}table tr{border-bottom:0.5px solid #ddd;}table td{padding:8px 0;}table tr:nth-child(odd){background:#f9f9f9;}
+.foot{color:var(--grey);font-size:11px;margin-top:24px;text-align:center}
+</style></head>
+<body>
+<div class="top">
+  <div><div class="logo">RE-TECK</div><h1>Market Radar v2</h1></div>
+  <span class="langsel"><select id="langSwitch" onchange="changeLang(this.value)"><option value="en">English</option><option value="pt">Português</option><option value="es">Español</option><option value="zh">中文</option><option value="ja">日本語</option></select></span>
+</div>
+<div class="tabs-main" id="mainTabs">
+  <button class="tab-btn active" data-tab="news">📰 Market News</button>
+  <button class="tab-btn" data-tab="dcs">🏢 ITAD Data Centers</button>
+  <button class="tab-btn" data-tab="general">💻 ITAD General Equipment</button>
+  <button class="tab-btn" data-tab="reg">📋 Regulatory & ESG</button>
+  <button class="tab-btn" data-tab="prices">💰 Commodity Prices</button>
+</div>
+<div class="wrap">
+  <section class="section active" id="news">
+    <h2>Market News</h2>
+    <div class="note">Latest news from the past 7 days across data centers, IT equipment, leasing, and telecom.</div>
+  </section>
+  
+  <section class="section" id="dcs">
+    <h2>ITAD Data Center Strategy</h2>
+    <div class="tabs-sub">
+      <button class="subtab active" onclick="showSub(event, 'dcs-opp')">Opportunities</button>
+      <button class="subtab" onclick="showSub(event, 'dcs-decom')">Decommissioning</button>
+      <button class="subtab" onclick="showSub(event, 'dcs-market')">Market Dashboard</button>
+    </div>
+    <section class="section active" id="dcs-opp">
+      <h3>GPU Leasing & Memory Recovery</h3>
+      <div class="grid">
+        <div class="card"><h3>GPU Leasing</h3><p>A100/H100 in neoclouds</p><span class="badge">High Priority</span><div class="stat">$1.40–$6.00/hr</div></div>
+        <div class="card"><h3>Memory Recovery</h3><p>DDR4/DDR5 from refreshes</p><span class="badge">High Priority</span><div class="stat">$65–$180/module</div></div>
+        <div class="card"><h3>Material Recycling</h3><p>Au, Ag, Cu from boards</p><span class="badge">Baseline</span><div class="stat">$2.5k–$12k/server</div></div>
+      </div>
+    </section>
+    <section class="section" id="dcs-decom">
+      <h3>Decommissioning Forecast</h3>
+      <div class="grid">
+        <div class="card"><h3>AWS</h3><p>~170k GPUs/yr</p><div class="stat">32%</div></div>
+        <div class="card"><h3>Azure</h3><p>~122k GPUs/yr</p><div class="stat">23%</div></div>
+        <div class="card"><h3>CoreWeave</h3><p>~63k GPUs/yr</p><div class="stat">8%</div></div>
+      </div>
+    </section>
+    <section class="section" id="dcs-market">
+      <h3>Market Dashboard</h3>
+      <div class="note">Global: ~2.6M GPUs | Annual decommissioning: ~537k units | Value: $3.2B–$7.4B</div>
+      <table>
+        <tr><td style="font-weight:500;">Region</td><td style="text-align:right;font-weight:500;">GPUs (est.)</td><td style="text-align:right;font-weight:500;">Annual Decom</td></tr>
+        <tr><td>North America</td><td style="text-align:right;">1,185k</td><td style="text-align:right;">237k</td></tr>
+        <tr><td>EMEA</td><td style="text-align:right;">526k</td><td style="text-align:right;">105k</td></tr>
+        <tr><td>APAC</td><td style="text-align:right;">395k</td><td style="text-align:right;">79k</td></tr>
+        <tr><td>China</td><td style="text-align:right;">395k</td><td style="text-align:right;">87k</td></tr>
+        <tr><td>Latin America</td><td style="text-align:right;">131k</td><td style="text-align:right;">26k</td></tr>
+      </table>
+    </section>
+  </section>
+  
+  <section class="section" id="general">
+    <h2>ITAD General Equipment</h2>
+    <div class="tabs-sub">
+      <button class="subtab active" onclick="showSub(event, 'ge-laptops')">Laptops</button>
+      <button class="subtab" onclick="showSub(event, 'ge-desktops')">Desktops</button>
+      <button class="subtab" onclick="showSub(event, 'ge-aio')">All-in-One</button>
+      <button class="subtab" onclick="showSub(event, 'ge-workstations')">Workstations</button>
+      <button class="subtab" onclick="showSub(event, 'ge-mobile')">Mobile</button>
+    </div>
+    <section class="section active" id="ge-laptops"><h3>Laptops: MacBooks & Windows</h3><p>Corporate refresh cycles (3-5yr), strong B2B refurbishment, parts recovery (GPUs, memory, SSDs).</p></section>
+    <section class="section" id="ge-desktops"><h3>Desktops: Standard & Mini</h3><p>Office & creative workstations, legacy systems. Parts harvesting (GPUs, RAM, PSUs).</p></section>
+    <section class="section" id="ge-aio"><h3>All-in-One Systems</h3><p>iMac, Dell Inspiron AIO, HP AIO. Panel recyclable, display refurbishment.</p></section>
+    <section class="section" id="ge-workstations"><h3>Workstations</h3><p>High-spec multi-GPU, Xeon-based. Strong B2B resale or parts harvest.</p></section>
+    <section class="section" id="ge-mobile"><h3>Smartphones & Tablets</h3><p>Carrier trade-in, manufacturer take-back. High-volume recovery, fast resale.</p></section>
+  </section>
+  
+  <section class="section" id="reg">
+    <h2>Regulatory & ESG</h2>
+    <div class="note">24 regulations tracked: PNRS (Brazil), EU Battery, India E-Waste, US RoHS, and more.</div>
+  </section>
+  
+  <section class="section" id="prices">
+    <h2>Commodity Prices</h2>
+    <div class="note">12 commodities: Au, Ag, Cu, Al, Ni, Fe, Li, Co, Mn, Pt, Pd, Ir. 6-month history.</div>
+  </section>
+  
+  <div class="foot">Re-Teck Market Radar v2 · hierarchical tabs · interactive intelligence</div>
+</div>
+
+<script>
+let currentLang = "en";
+
+function showTab(e, tabId) {
+  e?.preventDefault();
+  // Hide all main sections
+  document.querySelectorAll(".wrap > .section").forEach(s => s.classList.remove("active"));
+  // Remove active from all main buttons
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  
+  // Show selected section
+  const section = document.getElementById(tabId);
+  if (section) section.classList.add("active");
+  
+  // Highlight clicked button
+  const btn = Array.from(document.querySelectorAll(".tab-btn")).find(b => b.getAttribute("data-tab") === tabId);
+  if (btn) btn.classList.add("active");
+}
+
+function showSub(e, subTabId) {
+  e?.preventDefault();
+  // Hide all sub-sections within the parent
+  const parent = event.target.closest(".tabs-sub")?.nextElementSibling;
+  if (!parent) return;
+  
+  const siblings = parent.parentElement.querySelectorAll(".tabs-sub ~ .section");
+  siblings.forEach(s => s.classList.remove("active"));
+  
+  // Remove active from all sub-buttons
+  document.querySelectorAll(".subtab").forEach(b => b.classList.remove("active"));
+  
+  // Show selected sub-section
+  const section = document.getElementById(subTabId);
+  if (section) section.classList.add("active");
+  
+  // Highlight clicked button
+  event.target.classList.add("active");
+}
+
+function changeLang(lang) {
+  currentLang = lang;
+  localStorage.setItem("reteck_lang", lang);
+  alert("Language: " + lang + " (demo mode)");
+}
+
+// Setup main tab click handlers
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", (e) => {
+    const tabId = btn.getAttribute("data-tab");
+    showTab(e, tabId);
+  });
+});
+
+// Load saved language
+const saved = localStorage.getItem("reteck_lang");
+if (saved) currentLang = saved;
+</script>
+</body></html>
