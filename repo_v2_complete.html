@@ -84,9 +84,12 @@ table{width:100%;font-size:12px;border-collapse:collapse;}table tr{border-bottom
       <div class="chart-container"><canvas id="gpuChart"></canvas></div>
     </section>
     <section class="section" id="dcs-decom">
-      <h3>Decommissioning Forecast</h3>
+      <h3>Decommissioning Forecast by Operator & Region</h3>
+      <div class="note">Annual GPU unit decommissioning forecast based on operator market share, installed base, and 18-25% annual refresh cycles.</div>
       <div id="dcsDecom"></div>
       <div class="chart-container"><canvas id="decomChart"></canvas></div>
+      <div class="chart-container"><canvas id="operatorChart"></canvas></div>
+      <div class="chart-container"><canvas id="timelineChart"></canvas></div>
     </section>
     <section class="section" id="dcs-market">
       <h3>Global Market Dashboard</h3>
@@ -222,6 +225,8 @@ function renderDCS() {
   setTimeout(() => {
     drawGpuChart();
     drawDecomChart();
+    drawOperatorChart();
+    drawTimelineChart();
     drawRegionChart();
   }, 100);
 }
@@ -253,13 +258,92 @@ function drawDecomChart() {
   charts['decom'] = new Chart(ctx, {
     type: 'doughnut',
     data: {
-      labels: ['AWS 32%', 'Azure 23%', 'Google 11%', 'CoreWeave 8%', 'Others 26%'],
+      labels: ['AWS 32% (170k/yr)', 'Azure 23% (122k/yr)', 'Google 11% (52k/yr)', 'CoreWeave 8% (63k/yr)', 'Others 26% (130k/yr)'],
       datasets: [{
         data: [170, 122, 52, 63, 130],
-        backgroundColor: ['#36E0A8', '#D8F5EA', '#AEEBD3', '#081726', '#6B7785']
+        backgroundColor: ['#36E0A8', '#D8F5EA', '#AEEBD3', '#081726', '#6B7785'],
+        borderColor: '#fff',
+        borderWidth: 2
       }]
     },
-    options: { responsive: true, maintainAspectRatio: false }
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
+  });
+}
+
+function drawOperatorChart() {
+  const ctx = document.getElementById('operatorChart');
+  if (!ctx || charts['operator']) return;
+  
+  charts['operator'] = new Chart(ctx, {
+    type: 'horizontalBar',
+    data: {
+      labels: ['AWS', 'Azure', 'CoreWeave', 'Google Cloud', 'Meta', 'Equinix', 'Digital Realty', 'Runpod'],
+      datasets: [{
+        label: 'Annual GPU Decommissioning (k units)',
+        data: [170, 122, 63, 52, 33, 37, 25, 55],
+        backgroundColor: '#36E0A8',
+        borderColor: '#0E2A42',
+        borderWidth: 1
+      }]
+    },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false }
+  });
+}
+
+function drawTimelineChart() {
+  const ctx = document.getElementById('timelineChart');
+  if (!ctx || charts['timeline']) return;
+  
+  charts['timeline'] = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['2026', '2027', '2028', '2029', '2030'],
+      datasets: [
+        {
+          label: 'Hyperscalers (AWS, Azure, GCP)',
+          data: [344, 380, 420, 465, 512],
+          borderColor: '#36E0A8',
+          backgroundColor: 'rgba(54, 224, 168, 0.1)',
+          tension: 0.4,
+          pointRadius: 5,
+          pointBackgroundColor: '#36E0A8',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2
+        },
+        {
+          label: 'Neoclouds (CoreWeave, Lambda, Runpod)',
+          data: [118, 160, 215, 290, 390],
+          borderColor: '#081726',
+          backgroundColor: 'rgba(8, 23, 38, 0.1)',
+          tension: 0.4,
+          pointRadius: 5,
+          pointBackgroundColor: '#081726',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2
+        },
+        {
+          label: 'Other Operators',
+          data: [75, 95, 118, 145, 178],
+          borderColor: '#6B7785',
+          backgroundColor: 'rgba(107, 119, 133, 0.1)',
+          tension: 0.4,
+          pointRadius: 5,
+          pointBackgroundColor: '#6B7785',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top' }
+      },
+      scales: {
+        y: { beginAtZero: true, title: { display: true, text: 'GPU Units (k)' } }
+      }
+    }
   });
 }
 
