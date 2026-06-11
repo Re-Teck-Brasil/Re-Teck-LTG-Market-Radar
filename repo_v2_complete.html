@@ -1,7 +1,8 @@
 <!doctype html>
 <html><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Re-Teck Market Radar v2 - Complete Data</title>
+<title>Re-Teck Market Radar v2 Complete</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 <style>
 :root{--navy:#0E2A42;--navy2:#081726;--green:#36E0A8;--grey:#6B7785;--light:#EEF3F7;--ink:#222B33;}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,Roboto,sans-serif;color:var(--ink);background:#fff}
@@ -17,12 +18,15 @@
 .subtab{padding:8px 12px;background:#f0f0f0;border:0.5px solid #ccc;border-radius:6px;font-size:12px;cursor:pointer;color:#666;transition:all 0.2s}
 .subtab:hover{background:#e0e0e0}
 .subtab.active{background:var(--green);color:var(--navy);font-weight:700;border-color:var(--green)}
-.wrap{max-width:1000px;margin:0 auto;padding:14px 14px 60px}
+.wrap{max-width:1200px;margin:0 auto;padding:14px 14px 60px}
 .section{display:none}
 .section.active{display:block}
 .note{background:var(--light);border-left:4px solid var(--green);padding:9px 12px;border-radius:6px;font-size:12px;margin:12px 0;line-height:1.4}
 h2{font-size:16px;color:var(--navy);margin:16px 0 8px}
 h3{font-size:14px;color:var(--navy);margin:12px 0 8px}
+.opp-card{border:0.5px solid #ddd;border-radius:8px;padding:14px;background:#fafafa;margin-bottom:12px;border-left:4px solid var(--green)}
+.opp-card h3{margin:0 0 8px;color:var(--navy)}
+.opp-card p{margin:0;font-size:13px;line-height:1.45;color:#444}
 .card{border:0.5px solid #ddd;border-radius:8px;padding:12px;background:#fafafa;margin-bottom:8px}
 .card .company{font-weight:700;color:var(--navy);font-size:13px;display:block}
 .card .headline{font-size:13px;margin:4px 0;color:var(--navy)}
@@ -33,7 +37,7 @@ h3{font-size:14px;color:var(--navy);margin:12px 0 8px}
 .card li{margin:2px 0}
 .card .angle{font-style:italic;color:#1A7A5A;border-left:2px solid #D8F5EA;padding-left:8px;margin-top:6px;font-size:12px}
 .band{background:var(--green);color:var(--navy);font-weight:700;padding:6px 12px;margin:12px 0 8px;border-radius:4px;font-size:13px}
-.empty{color:var(--grey);font-style:italic;font-size:12px;padding:8px 12px}
+.chart-container{position:relative;height:300px;margin:16px 0;background:white;border:1px solid #eee;border-radius:8px;padding:12px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:12px 0}
 .grid-card{border:0.5px solid #ddd;border-radius:8px;padding:12px;background:#fafafa}
 .grid-card h3{margin:0 0 6px;font-size:13px;color:var(--navy)}
@@ -46,20 +50,20 @@ table{width:100%;font-size:12px;border-collapse:collapse;}table tr{border-bottom
 <body>
 <div class="top">
   <div><div class="logo">RE-TECK</div><h1>Market Radar v2</h1><div class="meta">Week of 2026-06-11</div></div>
-  <span class="langsel"><select id="langSwitch" onchange="changeLang(this.value)"><option value="en">English</option><option value="pt">Português</option></select></span>
+  <span class="langsel"><select id="langSwitch"><option value="en">English</option><option value="pt">Português</option></select></span>
 </div>
-<div class="tabs-main" id="mainTabs">
+<div class="tabs-main">
   <button class="tab-btn active" data-tab="news">📰 Market News</button>
   <button class="tab-btn" data-tab="dcs">🏢 ITAD Data Centers</button>
   <button class="tab-btn" data-tab="general">💻 ITAD General Equipment</button>
+  <button class="tab-btn" data-tab="strategy">🎯 Strategic Opportunities</button>
   <button class="tab-btn" data-tab="reg">📋 Regulatory & ESG</button>
-  <button class="tab-btn" data-tab="prices">💰 Commodity Prices</button>
 </div>
 <div class="wrap">
-  <div class="note" style="margin-bottom:16px;">Strong GPU infrastructure buildout: CoreWeave completes Vera Rubin NVL72 validation (June 2026); Elea secures landmark Petrobras $500M contract and $1B São Paulo expansion; TIM Brazil swap 6,500 4G/5G sites. AI PC launches (Dell, HP, Nvidia RTX Spark) signal refresh cycles ahead.</div>
+  <div class="note">Strong GPU infrastructure buildout: CoreWeave completes Vera Rubin NVL72 validation (June 2026); Elea secures landmark Petrobras $500M contract and $1B São Paulo expansion; TIM Brazil swap 6,500 4G/5G sites. AI PC launches (Dell, HP, Nvidia RTX Spark) signal refresh cycles ahead.</div>
   
   <section class="section active" id="news">
-    <h2>📰 Market News</h2>
+    <h2>📰 Market News (All 11 Items)</h2>
     <div id="allNews"></div>
   </section>
   
@@ -77,15 +81,18 @@ table{width:100%;font-size:12px;border-collapse:collapse;}table tr{border-bottom
         <div class="grid-card"><h3>Memory Recovery</h3><p>DDR4/DDR5 from refreshes</p><span class="badge">High Priority</span><div class="stat">$65–$180/module</div></div>
         <div class="grid-card"><h3>Material Recycling</h3><p>Au, Ag, Cu from boards</p><span class="badge">Baseline</span><div class="stat">$2.5k–$12k/server</div></div>
       </div>
+      <div class="chart-container"><canvas id="gpuChart"></canvas></div>
     </section>
     <section class="section" id="dcs-decom">
-      <h3>Decommissioning Forecast by Operator</h3>
+      <h3>Decommissioning Forecast</h3>
       <div id="dcsDecom"></div>
+      <div class="chart-container"><canvas id="decomChart"></canvas></div>
     </section>
     <section class="section" id="dcs-market">
-      <h3>Market Share Dashboard</h3>
+      <h3>Global Market Dashboard</h3>
       <div class="note">Global: ~2.6M GPUs | Annual decommissioning: ~537k units | Value: $3.2B–$7.4B</div>
       <div id="dcsMarket"></div>
+      <div class="chart-container"><canvas id="regionChart"></canvas></div>
     </section>
   </section>
   
@@ -105,40 +112,41 @@ table{width:100%;font-size:12px;border-collapse:collapse;}table tr{border-bottom
     <section class="section" id="ge-mobile"><h3>Smartphones & Tablets</h3><p>Carrier trade-in, manufacturer take-back. High-volume recovery, fast resale.</p></section>
   </section>
   
+  <section class="section" id="strategy">
+    <h2>🎯 Strategic Opportunities for Re-Teck</h2>
+    <div class="note">This week's news signals accelerating GPU buildout, Brazil market maturation, and regulatory tailwinds for certified ITAD players.</div>
+    <div id="stratOpp"></div>
+  </section>
+  
   <section class="section" id="reg">
-    <h2>📋 Regulatory & ESG</h2>
-    <div class="note">24 regulations tracked: PNRS (Brazil), EU Battery, India E-Waste, US RoHS, and more.</div>
+    <h2>📋 Regulatory & ESG Landscape</h2>
+    <div class="note">24 global regulations tracked including PNRS (Brazil), EU Battery Directive, India E-Waste Rules, US Right-to-Repair, Australia Battery Stewardship. Compliance + recycling credits + ESG reporting = new revenue.</div>
   </section>
   
-  <section class="section" id="prices">
-    <h2>💰 Commodity Prices</h2>
-    <div class="note">12 commodities: Au, Ag, Cu, Al, Ni, Fe, Li, Co, Mn, Pt, Pd, Ir. 6-month history. Updates weekly.</div>
-  </section>
-  
-  <div class="foot">Re-Teck Market Radar · weekly intelligence · generated automatically</div>
+  <div class="foot">Re-Teck Market Radar · Weekly intelligence · Generated automatically</div>
 </div>
 
 <script>
-const DATA = {"report_date": "2026-06-11", "window": "Past 7 days (week of June 4-11, 2026)", "summary": "Strong GPU infrastructure buildout: CoreWeave completes Vera Rubin NVL72 validation (June 2026); Elea secures landmark Petrobras $500M contract and $1B São Paulo expansion; TIM Brazil swap 6,500 4G/5G sites. AI PC launches (Dell, HP, Nvidia RTX Spark) signal refresh cycles ahead.", "sectors": [{"name": "ITAD Data Centers", "regions": {"North America": [{"company": "AWS", "headline": "Saudi Arabia region + AI Zone with 150,000 AI chips", "summary": "AWS announced expansion into Saudi Arabia with $5.3 billion investment, including an 'AI Zone' featuring capacity for up to 150,000 AI chips. Chile region expected by end of 2026 with $4B+ commitment.", "key_points": ["150k AI chip capacity in new Saudi Arabia AI Zone", "$5.3B Saudi region investment; Chile region ~$4B by EOY", "Hyperscaler expansion signals future GPU decommissioning in 2028–2030"], "reteck_angle": "Massive new GPU deployments in Saudi Arabia and Chile → large future decommissioning and refurbishment opportunity as hardware refreshes 3–5 years post-install.", "source": "AWS / Cloud industry analysis", "url": "https://www.datacenterknowledge.com/hyperscalers/hyperscalers-in-2026-what-s-next-for-the-world-s-largest-data-center-operators-", "location": "Saudi Arabia, Chile"}, {"company": "Microsoft Azure", "headline": "$7B Fairwater project in Wisconsin", "summary": "Microsoft's Fairwater data center project in Wisconsin represents a multi-billion-dollar commitment to hyperscale AI infrastructure in North America, contributing to Azure's 70+ global regions.", "key_points": ["$7B capital commitment (Fairwater, Wisconsin)", "Part of Azure's 400+ global data center portfolio", "AI/ML workload growth driving refresh cycles"], "reteck_angle": "Large capital deployment in North America → future server, GPU, and storage decommissioning as capex matures into refresh phases.", "source": "Cloud industry analysis", "url": "https://www.mindstudio.ai/blog/google-cloud-vs-aws-vs-azure-q1-2026-ai-infrastructure-race", "location": "Wisconsin, USA"}, {"company": "CoreWeave + NVIDIA", "headline": "Vera Rubin NVL72 validated on CoreWeave Cloud (June 2026)", "summary": "CoreWeave announced successful bring-up and validation of Nvidia's Vera Rubin NVL72 architecture on CoreWeave Cloud in June 2026, advancing production-scale AI compute. CoreWeave and NVIDIA expanded partnership to build 5+ GW AI factories by 2030.", "key_points": ["Vera Rubin NVL72 successfully deployed and validated (June 2026)", "5+ GW AI factory buildout planned by 2030", "CoreWeave: 850 MW active, 100k+ GPUs across 43 data centers (2025)"], "reteck_angle": "Neocloud GPU buildout (CoreWeave 5+ GW by 2030) → rapid fleet turnover with 28–35% annual refresh = high-volume GPU and memory recovery feedstock.", "source": "CoreWeave press release", "url": "https://www.coreweave.com/news/coreweave-advances-ai-native-cloud-platform-for-the-next-phase-of-production-scale-ai", "location": "North America (CoreWeave)"}], "Latin America - Brazil": [{"company": "Elea Digital", "headline": "Petrobras $500M contract + $1B São Paulo expansion", "summary": "Elea Digital won landmark contract to design and build major data center for Petrobras (Brazil's largest company) for ~US$500M—the largest IT infrastructure project ever awarded by a Latin American company. Elea also announced $1B expansion in greater São Paulo, acquiring two major data center campuses (Tamboré, São Bernardo do Campo) with ~120MW capacity expansion.", "key_points": ["Petrobras contract: US$500M (largest Latin America IT infrastructure project)", "$1B São Paulo expansion; ~120MW capacity over 3–5 years", "I Squared Capital ownership; Rio AI City 3GW project advancing"], "reteck_angle": "Elea's tripled data center footprint in Brazil → future decommissioning of legacy Petrobras and corporate IT assets + large GPU/server refresh cycles as new facilities mature.", "source": "PR Newswire, Data Centre Magazine", "url": "https://www.prnewswire.com/news-releases/elea-data-centers-appoints-new-board-of-directors-to-accelerate-ai-ready-infrastructure-expansion-in-brazil-302790277.html", "location": "São Paulo, Brazil"}, {"company": "Ascenty", "headline": "New data center SPO05 in São Paulo (47 MW campus)", "summary": "Ascenty announced construction of a new data center (SPO05) in the São Paulo metropolitan area with ~R$300 million investment, expanding its São Paulo footprint to five interconnected data centers totaling 47 MW.", "key_points": ["SPO05 new DC in São Paulo Metro area", "~R$300M investment; 47 MW total São Paulo campus", "Aligns with Brazil's digital transformation & cloud adoption"], "reteck_angle": "Ascenty's São Paulo expansion mirrors Elea's strategy → increased competition for customer IT asset disposition and data center equipment refurbishment.", "source": "Ascenty blog", "url": "https://ascenty.com/en/blog/news-ascenty-en/ascenty-celebrates-15-years-with-announcement-of-new-data-center-in-sao-paulo/", "location": "São Paulo, Brazil"}], "Latin America - Other": [], "EMEA": [], "APAC + Oceania": []}}, {"name": "ITAD OEM", "regions": {"North America": [{"company": "Nvidia / Dell / HP / Lenovo / ASUS / MSI", "headline": "Nvidia RTX Spark AI PC launch (Computex June 2026)", "summary": "Nvidia launched RTX Spark, an Arm-based AI PC chip, debuting on new laptop models from Microsoft, Dell, HP, ASUS, Lenovo, and MSI at Computex in early June 2026. These AI-enhanced laptops target creative professionals and enterprise users, signaling a wave of enterprise PC refresh cycles.", "key_points": ["RTX Spark (Arm-based) launched on laptops from 6 OEMs (June 2026)", "Dell, HP, ASUS, Lenovo, MSI AI PC models in market", "Enterprise AI PC refresh wave expected over next 2–3 years"], "reteck_angle": "New AI PC generation launched → enterprise PC refresh cycles begin in 2026–2027, driving trade-in/take-back programs and refurbishment demand for 3–5 year old laptops and desktops.", "source": "CNBC, TechCrunch", "url": "https://www.cnbc.com/2026/05/31/nvidias-new-chip-to-power-fresh-line-of-windows-laptops-by-dell-hp.html", "location": "North America (global launch)"}, {"company": "Dell / HPE / Lenovo / Supermicro", "headline": "AMD MI325X GPU servers (PowerEdge XE7745, others)", "summary": "Dell, HPE, Lenovo, and Supermicro announced new server offerings featuring AMD's latest MI325X data center GPU and 5th Gen Epyc processors. Dell PowerEdge XE7745 supports up to 16 single-width PCIe GPUs in 4U air-cooled form factor.", "key_points": ["Dell PowerEdge XE7745: up to 16 single-width MI325X GPUs / 4U", "AMD MI325X + 5th Gen Epyc platform", "High-density GPU servers for enterprise AI inferencing"], "reteck_angle": "New GPU server generation (MI325X) deployed in enterprises → existing H100/A100 servers retire, increasing secondary-market GPU and memory recovery feedstock for Re-Teck.", "source": "Data Center Dynamics", "url": "https://www.datacenterdynamics.com/en/news/hpe-dell-lenovo-and-supermicro-detail-new-server-offerings-featuring-amds-new-mi325x-gpus-and-epyc-cpus/", "location": "North America"}], "Latin America - Brazil": [], "Latin America - Other": [], "EMEA": [], "APAC + Oceania": []}}, {"name": "ITAD Leasing Companies", "regions": {"North America": [{"company": "Market (HaaS/Leasing sector)", "headline": "Hardware as a Service market grows 23.7% CAGR (2025–2026)", "summary": "Global Hardware as a Service market projected to grow from $127.52B (2025) to $157.73B (2026) at 23.7% CAGR, driven by accelerating enterprise demand for OpEx-structured hardware access and device refresh cycles.", "key_points": ["HaaS market $127.5B → $157.7B (2025→2026)", "23.7% CAGR reflects strong OpEx-based IT acquisition trend", "Enterprise AI infrastructure & device refresh drive growth"], "reteck_angle": "Rapid HaaS adoption → end-of-lease returns increasing 25%+ annually; major sourcing opportunity for Re-Teck to aggregate and disposition enterprise IT assets at volume.", "source": "Gartner / Market analysis", "url": "https://www.chg-meridian.com/us-en/insights/blog/best-it-equipment-leasing-companies/", "location": "Global (North America primary driver)"}, {"company": "CHG-MERIDIAN", "headline": "CHG-MERIDIAN manages $13B IT assets under management", "summary": "CHG-MERIDIAN, the world's largest fully independent technology leasing and lifecycle management company (founded 1979), manages over $13 billion in IT assets under management and is expanding its fleet refresh and end-of-life services.", "key_points": ["$13B AUM (as of 2024)", "Global leasing & lifecycle management leader", "Fleet refresh cycles every 3 years for enterprise customers"], "reteck_angle": "CHG-MERIDIAN's $13B AUM represents massive pipeline of end-of-lease IT returns; Re-Teck can position as downstream asset recovery and disposition partner for leasing companies.", "source": "CHG-MERIDIAN corporate", "url": "https://www.chg-meridian.com/us-en/solutions/it-asset-management/it-equipment-leasing/", "location": "Global (North America, EMEA, APAC)"}], "Latin America - Brazil": [], "Latin America - Other": [], "EMEA": [], "APAC + Oceania": []}}, {"name": "Telecom OEM", "regions": {"North America": [{"company": "Ericsson / Nokia / Samsung", "headline": "Open RAN deployments accelerate (AT&T 70% target by end 2026)", "summary": "Ericsson, Nokia, and Samsung are actively expanding Open RAN (O-RAN) deployments in live networks. AT&T, the largest Open RAN operator, has a $14B commitment and targets 70% of network traffic on open-capable platforms by end of 2026; currently at ~50% as of early 2026.", "key_points": ["AT&T $14B Open RAN deal (Ericsson); 50% traffic live, 70% target EOY 2026", "First O-RAN calls w/ third-party radios (1Finity/Fujitsu) successful in live networks", "5G RAN market projected $31.7B by 2033 (7.8% CAGR)"], "reteck_angle": "AT&T's 70% Open RAN migration → mass swap of legacy (closed RAN) telecom equipment; Ericsson/Nokia/Samsung depreciate older RAN gear, creating refurbishment & recycling volume.", "source": "Mobile World Live, IEEE ComSoc, Light Reading", "url": "https://www.mobileworldlive.com/ericsson/nokia-ericsson-peg-automation-as-next-open-ran-level", "location": "North America (AT&T network)"}], "Latin America - Brazil": [], "Latin America - Other": [], "EMEA": [{"company": "Vodafone (Europe)", "headline": "2,500 UK Open RAN sites by 2027 (Samsung, NEC, Wind River)", "summary": "Vodafone, Europe's most active Open RAN operator, has commercial deployments live in the UK and Romania. Vodafone contracted Samsung for 2,500+ sites in the UK by 2027 and thousands more in Germany, signaling massive telecom infrastructure swap.", "key_points": ["2,500 UK sites by 2027 (Samsung, NEC, Wind River)", "Open RAN live in UK and Romania (production deployments)", "Germany: additional thousands of Samsung Open RAN sites"], "reteck_angle": "Vodafone's 2,500+ site rollout in UK + Germany → decommissioning of legacy Ericsson/Nokia/Huawei RAN equipment; secondary market for refurbished telecom gear.", "source": "Light Reading, Mobile World Live", "url": "https://www.lightreading.com/open-ran/ericsson-and-nokia-are-handy-scapegoats-for-open-ran-s-demise", "location": "UK, Germany (Europe)"}], "APAC + Oceania": []}}, {"name": "Telecom Carriers", "regions": {"North America": [{"company": "AT&T", "headline": "50% network traffic on open-capable platforms (Target: 70% by EOY 2026)", "summary": "AT&T is the leader in Open RAN adoption with $14B commitment to Ericsson. As of early 2026, AT&T has successfully migrated ~50% of network traffic to open-capable hardware. Target is 70% by end of 2026.", "key_points": ["50% traffic on open platforms (as of early 2026)", "70% target by end of 2026", "First live O-RAN calls with third-party radios successful"], "reteck_angle": "AT&T's rapid Open RAN migration → accelerated depreciation of legacy proprietary RAN equipment; surplus telecom hardware enters secondary markets for refurbishment and material recovery.", "source": "Mobile World Live, Light Reading", "url": "https://www.theregister.com/networks/2026/06/03/dont-repeat-5g-mistakes-with-6g-plead-mobile-operators/5250572", "location": "North America (USA)"}], "Latin America - Brazil": [{"company": "TIM", "headline": "6,500 4G/5G site swap across 15 state capitals (38% coverage gain)", "summary": "TIM signed contracts with Nokia and Huawei for a major modernization program swapping 6,500 4G/5G sites across 15 state capitals and metropolitan areas through 2027. Modernization already completed in Belo Horizonte (680 sites, 1M+ users) and Brasília (722 sites, 2M+ users).", "key_points": ["6,500 4G/5G site swap through 2027", "680 sites already modernized in Belo Horizonte (1M+ users)", "38% 5G coverage increase; 40% capacity improvement planned"], "reteck_angle": "TIM's nationwide 6,500-site modernization → large volume of decommissioned 4G/5G telecom equipment (antennas, baseband, RRU) available for refurbishment and material recovery.", "source": "TIM Brazil investor filings (SEC 6-K)", "url": "https://www.sec.gov/Archives/edgar/data/0001826168/000129281426002816/timb20260505_6k1.htm", "location": "Brazil (15 state capitals & metro areas)"}], "Latin America - Other": [], "EMEA": [], "APAC + Oceania": []}}]};
-let currentLang = "en";
+const NEWS_DATA = {"report_date": "2026-06-11", "window": "Past 7 days (week of June 4-11, 2026)", "summary": "Strong GPU infrastructure buildout: CoreWeave completes Vera Rubin NVL72 validation (June 2026); Elea secures landmark Petrobras $500M contract and $1B São Paulo expansion; TIM Brazil swap 6,500 4G/5G sites. AI PC launches (Dell, HP, Nvidia RTX Spark) signal refresh cycles ahead.", "sectors": [{"name": "ITAD Data Centers", "regions": {"North America": [{"company": "AWS", "headline": "Saudi Arabia region + AI Zone with 150,000 AI chips", "summary": "AWS announced expansion into Saudi Arabia with $5.3 billion investment, including an 'AI Zone' featuring capacity for up to 150,000 AI chips. Chile region expected by end of 2026 with $4B+ commitment.", "key_points": ["150k AI chip capacity in new Saudi Arabia AI Zone", "$5.3B Saudi region investment; Chile region ~$4B by EOY", "Hyperscaler expansion signals future GPU decommissioning in 2028–2030"], "reteck_angle": "Massive new GPU deployments in Saudi Arabia and Chile → large future decommissioning and refurbishment opportunity as hardware refreshes 3–5 years post-install.", "source": "AWS / Cloud industry analysis", "url": "https://www.datacenterknowledge.com/hyperscalers/hyperscalers-in-2026-what-s-next-for-the-world-s-largest-data-center-operators-", "location": "Saudi Arabia, Chile"}, {"company": "Microsoft Azure", "headline": "$7B Fairwater project in Wisconsin", "summary": "Microsoft's Fairwater data center project in Wisconsin represents a multi-billion-dollar commitment to hyperscale AI infrastructure in North America, contributing to Azure's 70+ global regions.", "key_points": ["$7B capital commitment (Fairwater, Wisconsin)", "Part of Azure's 400+ global data center portfolio", "AI/ML workload growth driving refresh cycles"], "reteck_angle": "Large capital deployment in North America → future server, GPU, and storage decommissioning as capex matures into refresh phases.", "source": "Cloud industry analysis", "url": "https://www.mindstudio.ai/blog/google-cloud-vs-aws-vs-azure-q1-2026-ai-infrastructure-race", "location": "Wisconsin, USA"}, {"company": "CoreWeave + NVIDIA", "headline": "Vera Rubin NVL72 validated on CoreWeave Cloud (June 2026)", "summary": "CoreWeave announced successful bring-up and validation of Nvidia's Vera Rubin NVL72 architecture on CoreWeave Cloud in June 2026, advancing production-scale AI compute. CoreWeave and NVIDIA expanded partnership to build 5+ GW AI factories by 2030.", "key_points": ["Vera Rubin NVL72 successfully deployed and validated (June 2026)", "5+ GW AI factory buildout planned by 2030", "CoreWeave: 850 MW active, 100k+ GPUs across 43 data centers (2025)"], "reteck_angle": "Neocloud GPU buildout (CoreWeave 5+ GW by 2030) → rapid fleet turnover with 28–35% annual refresh = high-volume GPU and memory recovery feedstock.", "source": "CoreWeave press release", "url": "https://www.coreweave.com/news/coreweave-advances-ai-native-cloud-platform-for-the-next-phase-of-production-scale-ai", "location": "North America (CoreWeave)"}], "Latin America - Brazil": [{"company": "Elea Digital", "headline": "Petrobras $500M contract + $1B São Paulo expansion", "summary": "Elea Digital won landmark contract to design and build major data center for Petrobras (Brazil's largest company) for ~US$500M—the largest IT infrastructure project ever awarded by a Latin American company. Elea also announced $1B expansion in greater São Paulo, acquiring two major data center campuses (Tamboré, São Bernardo do Campo) with ~120MW capacity expansion.", "key_points": ["Petrobras contract: US$500M (largest Latin America IT infrastructure project)", "$1B São Paulo expansion; ~120MW capacity over 3–5 years", "I Squared Capital ownership; Rio AI City 3GW project advancing"], "reteck_angle": "Elea's tripled data center footprint in Brazil → future decommissioning of legacy Petrobras and corporate IT assets + large GPU/server refresh cycles as new facilities mature.", "source": "PR Newswire, Data Centre Magazine", "url": "https://www.prnewswire.com/news-releases/elea-data-centers-appoints-new-board-of-directors-to-accelerate-ai-ready-infrastructure-expansion-in-brazil-302790277.html", "location": "São Paulo, Brazil"}, {"company": "Ascenty", "headline": "New data center SPO05 in São Paulo (47 MW campus)", "summary": "Ascenty announced construction of a new data center (SPO05) in the São Paulo metropolitan area with ~R$300 million investment, expanding its São Paulo footprint to five interconnected data centers totaling 47 MW.", "key_points": ["SPO05 new DC in São Paulo Metro area", "~R$300M investment; 47 MW total São Paulo campus", "Aligns with Brazil's digital transformation & cloud adoption"], "reteck_angle": "Ascenty's São Paulo expansion mirrors Elea's strategy → increased competition for customer IT asset disposition and data center equipment refurbishment.", "source": "Ascenty blog", "url": "https://ascenty.com/en/blog/news-ascenty-en/ascenty-celebrates-15-years-with-announcement-of-new-data-center-in-sao-paulo/", "location": "São Paulo, Brazil"}], "Latin America - Other": [], "EMEA": [], "APAC + Oceania": []}}, {"name": "ITAD OEM", "regions": {"North America": [{"company": "Nvidia / Dell / HP / Lenovo / ASUS / MSI", "headline": "Nvidia RTX Spark AI PC launch (Computex June 2026)", "summary": "Nvidia launched RTX Spark, an Arm-based AI PC chip, debuting on new laptop models from Microsoft, Dell, HP, ASUS, Lenovo, and MSI at Computex in early June 2026. These AI-enhanced laptops target creative professionals and enterprise users, signaling a wave of enterprise PC refresh cycles.", "key_points": ["RTX Spark (Arm-based) launched on laptops from 6 OEMs (June 2026)", "Dell, HP, ASUS, Lenovo, MSI AI PC models in market", "Enterprise AI PC refresh wave expected over next 2–3 years"], "reteck_angle": "New AI PC generation launched → enterprise PC refresh cycles begin in 2026–2027, driving trade-in/take-back programs and refurbishment demand for 3–5 year old laptops and desktops.", "source": "CNBC, TechCrunch", "url": "https://www.cnbc.com/2026/05/31/nvidias-new-chip-to-power-fresh-line-of-windows-laptops-by-dell-hp.html", "location": "North America (global launch)"}, {"company": "Dell / HPE / Lenovo / Supermicro", "headline": "AMD MI325X GPU servers (PowerEdge XE7745, others)", "summary": "Dell, HPE, Lenovo, and Supermicro announced new server offerings featuring AMD's latest MI325X data center GPU and 5th Gen Epyc processors. Dell PowerEdge XE7745 supports up to 16 single-width PCIe GPUs in 4U air-cooled form factor.", "key_points": ["Dell PowerEdge XE7745: up to 16 single-width MI325X GPUs / 4U", "AMD MI325X + 5th Gen Epyc platform", "High-density GPU servers for enterprise AI inferencing"], "reteck_angle": "New GPU server generation (MI325X) deployed in enterprises → existing H100/A100 servers retire, increasing secondary-market GPU and memory recovery feedstock for Re-Teck.", "source": "Data Center Dynamics", "url": "https://www.datacenterdynamics.com/en/news/hpe-dell-lenovo-and-supermicro-detail-new-server-offerings-featuring-amds-new-mi325x-gpus-and-epyc-cpus/", "location": "North America"}], "Latin America - Brazil": [], "Latin America - Other": [], "EMEA": [], "APAC + Oceania": []}}, {"name": "ITAD Leasing Companies", "regions": {"North America": [{"company": "Market (HaaS/Leasing sector)", "headline": "Hardware as a Service market grows 23.7% CAGR (2025–2026)", "summary": "Global Hardware as a Service market projected to grow from $127.52B (2025) to $157.73B (2026) at 23.7% CAGR, driven by accelerating enterprise demand for OpEx-structured hardware access and device refresh cycles.", "key_points": ["HaaS market $127.5B → $157.7B (2025→2026)", "23.7% CAGR reflects strong OpEx-based IT acquisition trend", "Enterprise AI infrastructure & device refresh drive growth"], "reteck_angle": "Rapid HaaS adoption → end-of-lease returns increasing 25%+ annually; major sourcing opportunity for Re-Teck to aggregate and disposition enterprise IT assets at volume.", "source": "Gartner / Market analysis", "url": "https://www.chg-meridian.com/us-en/insights/blog/best-it-equipment-leasing-companies/", "location": "Global (North America primary driver)"}, {"company": "CHG-MERIDIAN", "headline": "CHG-MERIDIAN manages $13B IT assets under management", "summary": "CHG-MERIDIAN, the world's largest fully independent technology leasing and lifecycle management company (founded 1979), manages over $13 billion in IT assets under management and is expanding its fleet refresh and end-of-life services.", "key_points": ["$13B AUM (as of 2024)", "Global leasing & lifecycle management leader", "Fleet refresh cycles every 3 years for enterprise customers"], "reteck_angle": "CHG-MERIDIAN's $13B AUM represents massive pipeline of end-of-lease IT returns; Re-Teck can position as downstream asset recovery and disposition partner for leasing companies.", "source": "CHG-MERIDIAN corporate", "url": "https://www.chg-meridian.com/us-en/solutions/it-asset-management/it-equipment-leasing/", "location": "Global (North America, EMEA, APAC)"}], "Latin America - Brazil": [], "Latin America - Other": [], "EMEA": [], "APAC + Oceania": []}}, {"name": "Telecom OEM", "regions": {"North America": [{"company": "Ericsson / Nokia / Samsung", "headline": "Open RAN deployments accelerate (AT&T 70% target by end 2026)", "summary": "Ericsson, Nokia, and Samsung are actively expanding Open RAN (O-RAN) deployments in live networks. AT&T, the largest Open RAN operator, has a $14B commitment and targets 70% of network traffic on open-capable platforms by end of 2026; currently at ~50% as of early 2026.", "key_points": ["AT&T $14B Open RAN deal (Ericsson); 50% traffic live, 70% target EOY 2026", "First O-RAN calls w/ third-party radios (1Finity/Fujitsu) successful in live networks", "5G RAN market projected $31.7B by 2033 (7.8% CAGR)"], "reteck_angle": "AT&T's 70% Open RAN migration → mass swap of legacy (closed RAN) telecom equipment; Ericsson/Nokia/Samsung depreciate older RAN gear, creating refurbishment & recycling volume.", "source": "Mobile World Live, IEEE ComSoc, Light Reading", "url": "https://www.mobileworldlive.com/ericsson/nokia-ericsson-peg-automation-as-next-open-ran-level", "location": "North America (AT&T network)"}], "Latin America - Brazil": [], "Latin America - Other": [], "EMEA": [{"company": "Vodafone (Europe)", "headline": "2,500 UK Open RAN sites by 2027 (Samsung, NEC, Wind River)", "summary": "Vodafone, Europe's most active Open RAN operator, has commercial deployments live in the UK and Romania. Vodafone contracted Samsung for 2,500+ sites in the UK by 2027 and thousands more in Germany, signaling massive telecom infrastructure swap.", "key_points": ["2,500 UK sites by 2027 (Samsung, NEC, Wind River)", "Open RAN live in UK and Romania (production deployments)", "Germany: additional thousands of Samsung Open RAN sites"], "reteck_angle": "Vodafone's 2,500+ site rollout in UK + Germany → decommissioning of legacy Ericsson/Nokia/Huawei RAN equipment; secondary market for refurbished telecom gear.", "source": "Light Reading, Mobile World Live", "url": "https://www.lightreading.com/open-ran/ericsson-and-nokia-are-handy-scapegoats-for-open-ran-s-demise", "location": "UK, Germany (Europe)"}], "APAC + Oceania": []}}, {"name": "Telecom Carriers", "regions": {"North America": [{"company": "AT&T", "headline": "50% network traffic on open-capable platforms (Target: 70% by EOY 2026)", "summary": "AT&T is the leader in Open RAN adoption with $14B commitment to Ericsson. As of early 2026, AT&T has successfully migrated ~50% of network traffic to open-capable hardware. Target is 70% by end of 2026.", "key_points": ["50% traffic on open platforms (as of early 2026)", "70% target by end of 2026", "First live O-RAN calls with third-party radios successful"], "reteck_angle": "AT&T's rapid Open RAN migration → accelerated depreciation of legacy proprietary RAN equipment; surplus telecom hardware enters secondary markets for refurbishment and material recovery.", "source": "Mobile World Live, Light Reading", "url": "https://www.theregister.com/networks/2026/06/03/dont-repeat-5g-mistakes-with-6g-plead-mobile-operators/5250572", "location": "North America (USA)"}], "Latin America - Brazil": [{"company": "TIM", "headline": "6,500 4G/5G site swap across 15 state capitals (38% coverage gain)", "summary": "TIM signed contracts with Nokia and Huawei for a major modernization program swapping 6,500 4G/5G sites across 15 state capitals and metropolitan areas through 2027. Modernization already completed in Belo Horizonte (680 sites, 1M+ users) and Brasília (722 sites, 2M+ users).", "key_points": ["6,500 4G/5G site swap through 2027", "680 sites already modernized in Belo Horizonte (1M+ users)", "38% 5G coverage increase; 40% capacity improvement planned"], "reteck_angle": "TIM's nationwide 6,500-site modernization → large volume of decommissioned 4G/5G telecom equipment (antennas, baseband, RRU) available for refurbishment and material recovery.", "source": "TIM Brazil investor filings (SEC 6-K)", "url": "https://www.sec.gov/Archives/edgar/data/0001826168/000129281426002816/timb20260505_6k1.htm", "location": "Brazil (15 state capitals & metro areas)"}], "Latin America - Other": [], "EMEA": [], "APAC + Oceania": []}}]};
+const STRATEGY_DATA = {"as_of": "2026-06-11", "headline": "Opportunities this week: the AI buildout is front-loading a multi-year wave of high-value GPU, server and battery feedstock - and reuse beats recycling on value almost everywhere.", "opportunities": [{"title": "Capture the GPU second-life dividend, not just the gold", "text": "This week's gigawatt-scale AI commitments (SK Telecom/Nvidia, Broadcom-Apollo-Blackstone 20GW, Applied Digital) all imply successive GPU generations retiring from training into inference and, eventually, decommissioning. A used AI accelerator keeps 60-80% of its value; recycling a working one for ~US$400 of gold destroys it. Re-Teck's GPU 6R can be packaged as a certified 'compute second-life' line (remarket/lease to neoclouds, research, edge) - the single highest-value move in the pipeline."}, {"title": "Brazil is a compounding home-market opportunity", "text": "Elea's US$550M Rio AI City (scaling to 3GW), Claro's GPU-as-a-Service and the REDATA tax regime are accelerating a domestic DC base - future in-country ITAD feedstock that Re-Teck's Sao Paulo R2v3 plant can serve. PNRS reverse-logistics duties (Decreto 10.240/2020) plus tradable recycling credits (Decreto 11.413/2023) and LGPD data-destruction obligations turn compliance into billable, creditable work today."}, {"title": "Battery & ESS: build the second-life storage play", "text": "Data-center UPS/BESS and retired EV packs are a growing second-life pool. With new stationary packs near ~US$70/kWh, the edge now comes from trusted state-of-health testing - exactly the certification gap Re-Teck can own. Pair with closed-loop recycling for failed cells. The EU Battery Regulation's recovery-efficiency and recycled-content milestones (2027-2028) create guaranteed downstream demand for recovered Li/Co/Ni."}, {"title": "Regulation is a demand tailwind - sell the 'why now'", "text": "EU Battery Reg passports (2027) and recovery targets, EU/US right-to-repair extending device life, India's rising recycling targets and Australia's first mandatory battery stewardship (Oct 2026) all push volume toward certified processors. Re-Teck can lead with compliance + recycled-content supply, and use CSRD/ESG reporting needs to sell circularity-impact reporting as a service."}, {"title": "Route by value, price by content", "text": "For functional IT/AI hardware, reuse/parts-harvesting beats shredding 10x-60x+. Re-Teck should triage reuse-first and use device composition x live metal prices to price take-back/buyout offers and prioritise the richest streams (boards = gold; batteries = Co/Ni/Cu/Li)."}]};
+
+let charts = {};
 
 function renderNews() {
   const container = document.getElementById('allNews');
   container.innerHTML = '';
   
-  const sectors = DATA.sectors || [];
+  const sectors = NEWS_DATA.sectors || [];
   sectors.forEach(sector => {
     const regions = sector.regions || {};
     Object.entries(regions).forEach(([regionName, items]) => {
       if (!items || items.length === 0) return;
       
-      // Add region header
       const band = document.createElement('div');
       band.className = 'band';
       band.textContent = regionName;
       container.appendChild(band);
       
-      // Add cards for each item
       items.forEach(item => {
         const card = document.createElement('div');
         card.className = 'card';
@@ -155,10 +163,27 @@ function renderNews() {
   });
 }
 
+function renderStrategy() {
+  const container = document.getElementById('stratOpp');
+  container.innerHTML = '';
+  
+  const opps = STRATEGY_DATA.opportunities || [];
+  opps.forEach((opp, idx) => {
+    const card = document.createElement('div');
+    card.className = 'opp-card';
+    card.innerHTML = `
+      <h3>${idx + 1}. ${opp.title}</h3>
+      <p>${opp.text}</p>
+    `;
+    container.appendChild(card);
+  });
+}
+
 function renderDCS() {
-  // Render ITAD Data Centers news in decommissioning tab
-  const container = document.getElementById('dcsDecom');
-  const dcs = DATA.sectors.find(s => s.name === 'ITAD Data Centers');
+  const dcsContainer = document.getElementById('dcsDecom');
+  dcsContainer.innerHTML = '';
+  
+  const dcs = NEWS_DATA.sectors.find(s => s.name === 'ITAD Data Centers');
   if (!dcs) return;
   
   const regions = dcs.regions || {};
@@ -167,7 +192,7 @@ function renderDCS() {
     const band = document.createElement('div');
     band.className = 'band';
     band.textContent = regionName;
-    container.appendChild(band);
+    dcsContainer.appendChild(band);
     items.forEach(item => {
       const card = document.createElement('div');
       card.className = 'card';
@@ -176,12 +201,12 @@ function renderDCS() {
         <div class="headline"><a href="${item.url}" target="_blank">${item.headline}</a></div>
         <div class="location">${item.location}</div>
         <ul>${item.key_points.map(k => '<li>' + k + '</li>').join('')}</ul>
+        <div class="angle"><strong>Re-Teck angle:</strong> ${item.reteck_angle}</div>
       `;
-      container.appendChild(card);
+      dcsContainer.appendChild(card);
     });
   });
   
-  // Market dashboard table
   const marketTable = `
     <table>
       <tr><td style="font-weight:500;">Region</td><td style="text-align:right;font-weight:500;">GPUs (est.)</td><td style="text-align:right;font-weight:500;">Annual Decom</td></tr>
@@ -193,6 +218,69 @@ function renderDCS() {
     </table>
   `;
   document.getElementById('dcsMarket').innerHTML = marketTable;
+  
+  setTimeout(() => {
+    drawGpuChart();
+    drawDecomChart();
+    drawRegionChart();
+  }, 100);
+}
+
+function drawGpuChart() {
+  const ctx = document.getElementById('gpuChart');
+  if (!ctx || charts['gpu']) return;
+  
+  charts['gpu'] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['A100', 'H100', 'RTX 5090', 'RTX 4090', 'Memory DDR5'],
+      datasets: [{
+        label: 'Recovery Value (USD)',
+        data: [45000, 65000, 18000, 12000, 180],
+        backgroundColor: '#36E0A8',
+        borderColor: '#0E2A42',
+        borderWidth: 1
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y' }
+  });
+}
+
+function drawDecomChart() {
+  const ctx = document.getElementById('decomChart');
+  if (!ctx || charts['decom']) return;
+  
+  charts['decom'] = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['AWS 32%', 'Azure 23%', 'Google 11%', 'CoreWeave 8%', 'Others 26%'],
+      datasets: [{
+        data: [170, 122, 52, 63, 130],
+        backgroundColor: ['#36E0A8', '#D8F5EA', '#AEEBD3', '#081726', '#6B7785']
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+}
+
+function drawRegionChart() {
+  const ctx = document.getElementById('regionChart');
+  if (!ctx || charts['region']) return;
+  
+  charts['region'] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['North America', 'EMEA', 'APAC', 'China', 'LatAm'],
+      datasets: [{
+        label: 'Annual Decommissioning (k units)',
+        data: [237, 105, 79, 87, 26],
+        backgroundColor: '#36E0A8',
+        borderColor: '#0E2A42',
+        borderWidth: 1
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
 }
 
 function showTab(tabId) {
@@ -204,6 +292,8 @@ function showTab(tabId) {
   
   const btn = Array.from(document.querySelectorAll(".tab-btn")).find(b => b.getAttribute("data-tab") === tabId);
   if (btn) btn.classList.add("active");
+  
+  if (tabId === 'dcs') renderDCS();
 }
 
 function showSub(e, subTabId) {
@@ -218,12 +308,6 @@ function showSub(e, subTabId) {
   e.target.classList.add("active");
 }
 
-function changeLang(lang) {
-  currentLang = lang;
-  localStorage.setItem("reteck_lang", lang);
-}
-
-// Setup tab click handlers
 document.querySelectorAll(".tab-btn").forEach(btn => {
   btn.addEventListener("click", () => {
     const tabId = btn.getAttribute("data-tab");
@@ -231,11 +315,7 @@ document.querySelectorAll(".tab-btn").forEach(btn => {
   });
 });
 
-// Render data
 renderNews();
-renderDCS();
-
-const saved = localStorage.getItem("reteck_lang");
-if (saved) currentLang = saved;
+renderStrategy();
 </script>
 </body></html>
