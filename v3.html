@@ -289,12 +289,14 @@ function pDetailR(i){const c=PRICES.commodities[i];document.getElementById("pDet
  document.getElementById("pTable").innerHTML=rows;document.getElementById("pDq").textContent=tr('dq_lbl')+T(c.data_quality);
  document.getElementById("pSrc").innerHTML=tr('sources_lbl')+(c.sources||[]).map(s=>`<a href="${s.url}" target="_blank" rel="noopener">${s.label}</a>`).join("  ·  ");}
 let dChart=null,dSel=null,dInit=false;
+const DC_EXCLUDE=["Smartphone","Laptop","Li-ion battery (NMC, per kWh)"];
+function dcDevList(){return DECISION.devices.filter(d=>!DC_EXCLUDE.includes(d.name));}
 function oRender(){document.getElementById("oHead").textContent=T(getStratData().headline||"");const l=document.getElementById("oList");l.innerHTML="";
  (getStratData().opportunities||[]).forEach(o=>{const d=el("div","opp");d.appendChild(el("div","t",T(o.title)));d.appendChild(el("div","x",T(o.text)));l.appendChild(d);});
- const g=document.getElementById("dGrid");g.innerHTML="";DECISION.devices.forEach((c,i)=>{const d=el("div","tile"+(i===dSel?" active":""));d.onclick=()=>dSel2(i);
+ const g=document.getElementById("dGrid");g.innerHTML="";dcDevList().forEach((c,i)=>{const d=el("div","tile"+(i===dSel?" active":""));d.onclick=()=>dSel2(i);
   d.innerHTML=`<div class="nm">${T(c.name)}</div><div class="mom" style="color:var(--angle)">${tr('best_lbl')}${T(c.recommended)}</div><div class="dq">${tr('recycle')} $${fmt(c.recycle)}</div>`;g.appendChild(d);});}
 function dSel2(i){dSel=i;dRender(i);document.getElementById("dDetail").scrollIntoView({behavior:"smooth",block:"nearest"});oRender();}
-function dRender(i){const c=DECISION.devices[i];document.getElementById("dDetail").style.display="block";document.getElementById("dTitle").textContent=T(c.name);
+function dRender(i){const c=dcDevList()[i];document.getElementById("dDetail").style.display="block";document.getElementById("dTitle").textContent=T(c.name);
  document.getElementById("dSub").textContent=tr('conf_lbl')+T(c.confidence);
  const labels=[],data=[],colors=[];labels.push(tr("recycle"));data.push(c.recycle);colors.push("#C8860B");
  if(c.reuse!=null){labels.push(tr("reuse"));data.push(c.reuse);colors.push(NAVY);}
