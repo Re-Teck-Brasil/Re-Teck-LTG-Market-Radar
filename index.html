@@ -81,9 +81,9 @@ table.g td{padding:5px 8px;border-bottom:1px solid #eef2f5}table.g td.r,table.g 
   <button class="tabbtn active" data-tab="news" data-i18n="news">Market News</button>
   <button class="tabbtn" data-tab="dcstrat" data-i18n="dcstrat">ITAD Data Center Strategy</button>
   <button class="tabbtn" data-tab="devstrat" data-i18n="devstrat">ITAD Devices Strategy</button>
-  <button class="tabbtn" data-tab="comp" data-i18n="tab_comp">Competitor Radar</button>
-  <button class="tabbtn" data-tab="reg" data-i18n="reg">Regulatory & ESG</button>
   <button class="tabbtn" data-tab="prices" data-i18n="prices">Commodity Prices</button>
+  <button class="tabbtn" data-tab="reg" data-i18n="reg">Regulatory & ESG</button>
+  <button class="tabbtn" data-tab="comp" data-i18n="tab_comp">Competitor Radar</button>
 </div>
 <div class="wrap">
   <section id="tab-news">
@@ -476,7 +476,7 @@ function cRender(){cMatrix();cCtl();const f=document.getElementById('cFeed');if(
  let t=tr('feedtitle');if(cState.type&&cState.region)t=T(cState.type)+' · '+T(REGIONS.find(r=>r[0]===cState.region)[1]);else if(cState.type)t=T(cState.type);else if(cState.region)t=T(REGIONS.find(r=>r[0]===cState.region)[1]);
  document.getElementById('cFeedTitle').textContent=t;document.getElementById('cClear').style.display=(cState.type||cState.region)?'inline':'none';}
 (function(){var b=document.getElementById('cClear');if(b)b.onclick=()=>{cState.type=null;cState.region=null;cRender();};})();
-const TABS=["news","dcstrat","devstrat","comp","reg","prices"];
+const TABS=["news","dcstrat","devstrat","prices","reg","comp"];
 function showTab(n){if(!TABS.includes(n))n="news";TABS.forEach(k=>{document.getElementById("tab-"+k).hidden=(k!==n);});
  document.querySelectorAll(".tabbtn").forEach(b=>b.classList.toggle("active",b.dataset.tab===n));localStorage.setItem("reteck_tab",n);
  if(n==="prices"){if(!pInit){pInit=true;pGridR();const s=localStorage.getItem("reteck_metal");let st=0;if(s){const k=PRICES.commodities.findIndex(c=>c.name===s);if(k>=0)st=k;}pSel2(st);}else if(pChart)pChart.resize();}
