@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Re-Teck Market Radar</title>
+<style>
+:root{
+  --navy:#0E2A42; --navy2:#081726; --green:#36E0A8; --greenT:#D8F5EA; --greenT2:#AEEBD3;
+  --amber:#FFC000; --grey:#6B7785; --light:#EEF3F7; --link:#1E7FA6; --angle:#1A7A5A; --ink:#222B33;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:#fff;}
+a{color:var(--link);text-decoration:none}
+a:hover{text-decoration:underline}
+.top{background:var(--navy2);color:#fff;padding:18px 16px 16px;border-bottom:4px solid var(--green)}
+.top .brand{color:var(--green);font-weight:700;letter-spacing:2px;font-size:13px}
+.top h1{margin:2px 0 4px;font-size:22px}
+.top .meta{color:#cfe9df;font-size:12px}
+.wrap{max-width:1000px;margin:0 auto;padding:14px 14px 60px}
+.summary{background:var(--light);border-left:4px solid var(--green);padding:10px 12px;border-radius:6px;font-size:14px;line-height:1.45;margin:14px 0}
+h2{font-size:16px;color:var(--navy);margin:18px 0 8px}
+.controls{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:6px}
+.controls .lbl{font-size:12px;color:var(--grey);width:100%;margin-top:4px}
+.chip{border:1px solid #cfd8e0;background:#fff;color:var(--navy);border-radius:999px;padding:5px 11px;font-size:12.5px;cursor:pointer;white-space:nowrap}
+.chip.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.chip.region.active{background:var(--green);color:var(--navy);border-color:var(--green);font-weight:700}
+.matrixwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:8px}
+table.matrix{border-collapse:separate;border-spacing:0;width:100%;min-width:520px;font-size:13px}
+table.matrix th,table.matrix td{padding:9px 8px;text-align:center}
+table.matrix thead th{background:var(--navy);color:#fff;font-size:12px;cursor:pointer;position:sticky;top:0}
+table.matrix thead th:first-child{text-align:left}
+table.matrix tbody th{background:var(--light);color:var(--navy);text-align:left;font-size:12.5px;cursor:pointer;position:sticky;left:0;min-width:150px}
+table.matrix td{cursor:pointer;font-weight:700;color:var(--navy);border:2px solid #fff;border-radius:6px}
+td.z{color:#b3bcc4;font-weight:400;cursor:default}
+td.lo{background:var(--greenT)} td.hi{background:var(--greenT2)}
+td.sel{outline:3px solid var(--amber);outline-offset:-3px}
+.legend{font-size:11px;color:var(--grey);margin:6px 2px 0}
+.feedhead{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.count{background:var(--green);color:var(--navy);font-weight:700;border-radius:999px;padding:2px 9px;font-size:12px}
+.clear{font-size:12px;color:var(--link);cursor:pointer;border:0;background:none}
+.sec{margin-top:16px}
+.secbar{background:var(--navy);color:#fff;font-weight:700;border-left:4px solid var(--green);padding:8px 12px;border-radius:6px 6px 0 0;font-size:14px}
+.band{background:var(--greenT);color:var(--navy);font-weight:700;padding:6px 12px;font-size:12.5px;border-left:3px solid var(--green);margin-top:8px}
+.card{border:1px solid #e6ecf1;border-top:0;padding:10px 12px}
+.card:nth-child(even){background:#f7fafc}
+.card .co{font-weight:700;color:var(--navy);font-size:13.5px}
+.card .hl{font-size:13px;margin:1px 0 2px}
+.card .loc{font-size:11px;color:var(--grey)}
+.kp{margin:6px 0 4px;padding-left:16px}
+.kp li{font-size:12.5px;line-height:1.45;margin:1px 0}
+.angle{font-style:italic;color:var(--angle);font-size:12.5px;border-left:2px solid var(--greenT2);padding-left:8px;margin-top:4px}
+.empty{color:var(--grey);font-style:italic;font-size:12.5px;padding:8px 12px;border:1px solid #e6ecf1;border-top:0}
+.foot{color:var(--grey);font-size:11px;margin-top:24px;text-align:center}
+@media (max-width:640px){ .top h1{font-size:19px} h2{font-size:15px} }
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="brand">RE-TECK</div>
+  <h1>Market Radar — Weekly</h1>
+  <div class="meta" id="meta"></div>
+</div>
+<div class="wrap">
+  <div class="summary" id="summary"></div>
+
+  <div class="controls" id="regionCtl"><span class="lbl">Your region — tap to see only your news:</span></div>
+  <div class="controls" id="sectorCtl"><span class="lbl">Sector:</span></div>
+
+  <h2>At a glance</h2>
+  <div class="matrixwrap"><table class="matrix" id="matrix"></table></div>
+  <div class="legend">Tap a number to open that sector &amp; region. Tap a row or column header to filter by sector or region. Greener = more activity. &ndash; = nothing found.</div>
+
+  <h2 class="feedhead"><span id="feedTitle">All news</span> <span class="count" id="count"></span> <button class="clear" id="clear" style="display:none">Clear filter</button></h2>
+  <div id="feed"></div>
+
+  <div class="foot">Re-Teck Market Radar · generated automatically · tap any headline to open the full story.</div>
+</div>
+<script>
+const DATA = {
+  "report_date": "2026-07-06",
+  "window": "Past 7 days (week of 2026-07-06)",
+  "summary": "Quiet-to-moderate week. AI data-center buildout continues (Prime opens first building of its 240MW Avondale campus; Elea plans Brazil's Amazon AI DC). Brazil is the telecom hotspot: Vivo/Claro/TIM light up standalone 5G on 3.5GHz in Brasilia, TIM launches TIM Play, and AST SpaceMobile files for a Brazilian D2D constellation. Vendor moves: Ericsson holds full-stack 5G-core line as Nokia exits; Nokia wins Orange Belgium optical transport; CG Semi starts India OSAT production; Dell PowerStore Elite / new PowerEdge reach availability. Most actionable signals: Brazil 5G/spectrum rollout (retired legacy radios) and new hyperscale/AI builds (future GPU and server ITAD).",
+  "sectors": [
+    {
+      "name": "ITAD Data Centers",
+      "regions": {
+        "North America": [
+          {
+            "company": "Prime Data Centers",
+            "headline": "Prime opens first facility at 240MW Avondale campus",
+            "key_points": [
+              "240MW hyperscale campus, Phoenix metro",
+              "First building online, early July 2026",
+              "~$3B investment, closed-loop cooling"
+            ],
+            "reteck_angle": "New hyperscale build seeds future GPU/server ITAD and reuse.",
+            "source": "Data Center Knowledge",
+            "url": "https://www.datacenterknowledge.com/data-center-construction/new-data-center-developments-july-2026",
+            "location": "Avondale, Arizona, USA"
+          }
+        ],
+        "Latin America - Brazil": [
+          {
+            "company": "Elea Data Centers",
+            "headline": "Elea plans first AI data center in Brazilian Amazon",
+            "key_points": [
+              "Belem, Para; BEL1 facility",
+              "7.5MW initial, up to 100MW",
+              "Ops Q2 2027; AXIA renewable PPA"
+            ],
+            "reteck_angle": "AI-ready buildout signals later GPU lifecycle, decommissioning demand.",
+            "source": "BeBeez International / DCD",
+            "url": "https://bebeez.eu/2026/06/29/elea-announces-ai-data-center-in-the-amazon-region-of-brazil/",
+            "location": "Belem, Para, Brazil"
+          }
+        ],
+        "Latin America - Other": [],
+        "EMEA": [],
+        "APAC + Oceania": []
+      }
+    },
+    {
+      "name": "ITAD OEM",
+      "regions": {
+        "North America": [
+          {
+            "company": "Dell Technologies",
+            "headline": "Dell PowerStore Elite and new PowerEdge reach availability",
+            "key_points": [
+              "PowerStore Elite available July 2026",
+              "PowerEdge R9825/M9825 servers, 2H 2026",
+              "AI-era data-center refresh line"
+            ],
+            "reteck_angle": "New storage/server line drives fleet refresh and end-of-life returns.",
+            "source": "Dell Technologies Newsroom",
+            "url": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2026~05~dell-technologies-reimagines-the-modern-data-center-for-the-ai-era.htm",
+            "location": "Round Rock, Texas, USA"
+          }
+        ],
+        "Latin America - Brazil": [],
+        "Latin America - Other": [],
+        "EMEA": [],
+        "APAC + Oceania": []
+      }
+    },
+    {
+      "name": "ITAD Leasing Companies",
+      "regions": {
+        "North America": [],
+        "Latin America - Brazil": [],
+        "Latin America - Other": [],
+        "EMEA": [],
+        "APAC + Oceania": []
+      }
+    },
+    {
+      "name": "Telecom OEM",
+      "regions": {
+        "North America": [
+          {
+            "company": "Ericsson",
+            "headline": "Ericsson holds firm on full-stack 5G core as Nokia exits",
+            "key_points": [
+              "50+ live bare-metal CNIS deployments cited",
+              "Nokia core customers face 2028 migration",
+              "Orange France weighing new core options"
+            ],
+            "reteck_angle": "Core platform migrations retire legacy gear needing ITAD disposition.",
+            "source": "Light Reading",
+            "url": "https://www.lightreading.com/mobile-core/ericsson-cloud-boss-still-resists-a-nokia-move-in-the-5g-core",
+            "location": "Global (US-focused)"
+          }
+        ],
+        "Latin America - Brazil": [],
+        "Latin America - Other": [],
+        "EMEA": [
+          {
+            "company": "Nokia",
+            "headline": "Orange Belgium picks Nokia for converged optical network",
+            "key_points": [
+              "Sole supplier, multi-year transport upgrade",
+              "1830 PSS platform, 1G-400G+",
+              "Unifies fixed and mobile transport"
+            ],
+            "reteck_angle": "Optical/transport swap-out generates retired gear for recycling.",
+            "source": "Capacity",
+            "url": "https://capacityglobal.com/news/orange-belgium-picks-nokia-optical-networks/",
+            "location": "Brussels, Belgium"
+          }
+        ],
+        "APAC + Oceania": [
+          {
+            "company": "CG Semi",
+            "headline": "CG Semi opens Sanand OSAT chip-packaging plant",
+            "key_points": [
+              "Commercial production started July 4",
+              "Advanced packaging for 5G, auto, HPC",
+              "One of India's largest OSAT ops"
+            ],
+            "reteck_angle": "New chip supply chain feeds future device/equipment refresh cycles.",
+            "source": "Windows News",
+            "url": "https://windowsnews.ai/article/cg-semi-fires-up-sanand-osat-plant-indias-latest-chip-packaging-hub-starts-commercial-production.435027",
+            "location": "Sanand, Gujarat, India"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Telecom Carriers",
+      "regions": {
+        "North America": [],
+        "Latin America - Brazil": [
+          {
+            "company": "Vivo, Claro, TIM",
+            "headline": "Operators activate standalone 5G on 3.5GHz in Brasilia",
+            "key_points": [
+              "3.5GHz standalone 5G switched on Jul 6",
+              "TIM hit 952 Mbps download",
+              "BH, Porto Alegre, Sao Paulo next"
+            ],
+            "reteck_angle": "Spectrum rollout drives new radios; retired legacy gear for ITAD.",
+            "source": "Telesintese",
+            "url": "https://www.telesintese.com.br/vivo-tim-e-claro-ativam-o-5g-puro-em-35-ghz/",
+            "location": "Brasilia, Brazil"
+          },
+          {
+            "company": "TIM Brasil",
+            "headline": "TIM launches TIM Play streaming platform",
+            "key_points": [
+              "Live channels, movie rentals, music",
+              "Tiers R$9.90 to R$89.90/month",
+              "Powered by Mileto (former Oi TV)"
+            ],
+            "reteck_angle": "New service pushes set-top/device volume; future returns and swaps.",
+            "source": "TELETIME News",
+            "url": "https://teletime.com.br/03/07/2026/tim-streaming-plataforma-tim-play/",
+            "location": "Sao Paulo, Brazil"
+          },
+          {
+            "company": "AST SpaceMobile",
+            "headline": "AST SpaceMobile files for first Brazilian satellite constellation",
+            "key_points": [
+              "First non-GEO Brazilian constellation request",
+              "Direct-to-device mobile via satellite",
+              "Anatel weighing spectrum limits"
+            ],
+            "reteck_angle": "Satellite D2D expands network gear footprint; eventual hardware turnover.",
+            "source": "TELETIME News",
+            "url": "https://teletime.com.br/03/07/2026/boletim-teletime-satelites/",
+            "location": "Brazil"
+          }
+        ],
+        "Latin America - Other": [],
+        "EMEA": [
+          {
+            "company": "Vodacom / Safaricom",
+            "headline": "Vodacom completes $2.1bn deal for 55% Safaricom control",
+            "key_points": [
+              "Closed June 30, 2026",
+              "Acquired 20% (Kenya govt + Vodafone)",
+              "Boosts East Africa 4G/5G/fibre push"
+            ],
+            "reteck_angle": "Consolidation accelerates network integration and equipment rationalization/ITAD.",
+            "source": "The Fast Mode",
+            "url": "https://www.thefastmode.com/mobile-network-operators-m-a/49424-vodacom-expands-east-africa-presence-with-safaricom-stake-acquisition-completion",
+            "location": "Nairobi, Kenya"
+          }
+        ],
+        "APAC + Oceania": [
+          {
+            "company": "Bharti Airtel",
+            "headline": "Airtel expands network along Amarnath Yatra routes",
+            "key_points": [
+              "New sites: Chandanwari, Pissu Top, Betaab Valley",
+              "Coverage for pilgrims and security",
+              "Voice, data, emergency comms"
+            ],
+            "reteck_angle": "Rapid site builds add radios; refresh cycles feed future ITAD.",
+            "source": "TelecomTalk",
+            "url": "https://telecomtalk.info/airtel-expands-network-along-amarnath-yatra-routes/1009336/",
+            "location": "Jammu and Kashmir, India"
+          }
+        ]
+      }
+    }
+  ]
+};
+const SECTORS = ["ITAD Data Centers","ITAD OEM","ITAD Leasing Companies","Telecom OEM","Telecom Carriers"];
+const REGIONS = [
+  ["North America","North America","N. America"],
+  ["Latin America - Brazil","Brazil","Brazil"],
+  ["Latin America - Other","Latin America (rest)","LatAm rest"],
+  ["EMEA","EMEA","EMEA"],
+  ["APAC + Oceania","APAC + Oceania","APAC+Oce."]
+];
+let state = {sector:null, region:null};
+
+function regionsOf(name){ const s=(DATA.sectors||[]).find(x=>x.name===name); return (s&&s.regions)||{}; }
+function items(name,key){ return (regionsOf(name)[key])||[]; }
+
+function el(tag,cls,txt){ const e=document.createElement(tag); if(cls)e.className=cls; if(txt!=null)e.textContent=txt; return e; }
+
+function setFilter(sector,region){ state.sector=sector; state.region=region; if(region) localStorage.setItem('reteck_region',region); render(); window.scrollTo({top:document.getElementById('matrix').offsetTop-10,behavior:'smooth'}); }
+
+function buildControls(){
+  const rc=document.getElementById('regionCtl');
+  const all=el('button','chip region'+(state.region===null?' active':''),'All regions'); all.onclick=()=>{state.region=null;localStorage.removeItem('reteck_region');render();}; rc.appendChild(all);
+  REGIONS.forEach(r=>{ const b=el('button','chip region'+(state.region===r[0]?' active':''),r[1]); b.onclick=()=>{state.region=r[0];localStorage.setItem('reteck_region',r[0]);render();}; rc.appendChild(b); });
+  const sc=document.getElementById('sectorCtl');
+  const sall=el('button','chip'+(state.sector===null?' active':''),'All sectors'); sall.onclick=()=>{state.sector=null;render();}; sc.appendChild(sall);
+  SECTORS.forEach(s=>{ const b=el('button','chip'+(state.sector===s?' active':''),s); b.onclick=()=>{state.sector=s;render();}; sc.appendChild(b); });
+}
+
+function buildMatrix(){
+  const t=document.getElementById('matrix'); t.innerHTML='';
+  const thead=el('thead'); const hr=el('tr');
+  const corner=el('th',null,'Sector / Region'); hr.appendChild(corner);
+  REGIONS.forEach(r=>{ const th=el('th',null,r[2]); th.onclick=()=>setFilter(null,r[0]); hr.appendChild(th); });
+  thead.appendChild(hr); t.appendChild(thead);
+  const tb=el('tbody');
+  SECTORS.forEach(s=>{
+    const tr=el('tr'); const th=el('th',null,s); th.onclick=()=>setFilter(s,null); tr.appendChild(th);
+    REGIONS.forEach(r=>{
+      const n=items(s,r[0]).length; const td=el('td',null, n? String(n):'–');
+      if(n>=3)td.classList.add('hi'); else if(n>=1)td.classList.add('lo'); else td.classList.add('z');
+      if(state.sector===s && state.region===r[0]) td.classList.add('sel');
+      if(n) td.onclick=()=>setFilter(s,r[0]);
+      tr.appendChild(td);
+    });
+    tb.appendChild(tr);
+  });
+  t.appendChild(tb);
+}
+
+function card(it){
+  const c=el('div','card');
+  if(it.company) c.appendChild(el('div','co',it.company));
+  const hl=el('div','hl');
+  if(it.url){ const a=el('a',null,it.headline||''); a.href=it.url; a.target='_blank'; a.rel='noopener'; hl.appendChild(a); }
+  else hl.textContent=it.headline||'';
+  c.appendChild(hl);
+  if(it.location) c.appendChild(el('div','loc',it.location));
+  const kps=(it.key_points||[]).slice(0,3);
+  if(kps.length){ const ul=el('ul','kp'); kps.forEach(k=>ul.appendChild(el('li',null,k))); c.appendChild(ul); }
+  else if(it.summary) c.appendChild(el('div','hl',it.summary));
+  if(it.reteck_angle){ const a=el('div','angle','Re-Teck angle: '+it.reteck_angle); c.appendChild(a); }
+  return c;
+}
+
+function render(){
+  buildMatrix();
+  document.getElementById('sectorCtl').innerHTML='<span class="lbl">Sector:</span>';
+  document.getElementById('regionCtl').innerHTML='<span class="lbl">Your region — tap to see only your news:</span>';
+  buildControls();
+  const feed=document.getElementById('feed'); feed.innerHTML='';
+  const secs = state.sector? [state.sector]:SECTORS;
+  const regs = state.region? REGIONS.filter(r=>r[0]===state.region):REGIONS;
+  let total=0;
+  secs.forEach(s=>{
+    let secCount=0; const block=el('div','sec'); block.appendChild(el('div','secbar',s));
+    let any=false;
+    regs.forEach(r=>{
+      const its=items(s,r[0]);
+      if(state.region && its.length===0 && !state.sector) return; // when region-only, skip empty sectors silently handled below
+      block.appendChild(el('div','band',r[1]));
+      if(its.length===0){ block.appendChild(el('div','empty','No relevant news in this window.')); }
+      else { its.forEach(it=>{ block.appendChild(card(it)); secCount++; total++; }); }
+      any=true;
+    });
+    if(any) feed.appendChild(block);
+  });
+  document.getElementById('count').textContent = total+(total===1?' item':' items');
+  let title='All news';
+  if(state.sector && state.region){ const rl=REGIONS.find(r=>r[0]===state.region)[1]; title=state.sector+' · '+rl; }
+  else if(state.sector){ title=state.sector; }
+  else if(state.region){ title=REGIONS.find(r=>r[0]===state.region)[1]; }
+  document.getElementById('feedTitle').textContent=title;
+  document.getElementById('clear').style.display=(state.sector||state.region)?'inline':'none';
+}
+
+document.getElementById('clear').onclick=()=>{ state={sector:null,region:null}; render(); };
+document.getElementById('meta').textContent='Week of '+(DATA.report_date||'')+'  ·  Window: '+(DATA.window||'Past 7 days');
+document.getElementById('summary').textContent=DATA.summary||'';
+const saved=localStorage.getItem('reteck_region'); if(saved && REGIONS.some(r=>r[0]===saved)) state.region=saved;
+render();
+</script>
+</body>
+</html>
